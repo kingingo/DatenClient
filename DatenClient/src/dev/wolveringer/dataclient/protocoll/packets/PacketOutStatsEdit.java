@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-public class PacketInStatsEdit extends Packet {
+@AllArgsConstructor
+public class PacketOutStatsEdit extends Packet {
 	@AllArgsConstructor
 	@Getter
 	public static class EditStats {
@@ -30,33 +30,31 @@ public class PacketInStatsEdit extends Packet {
 	private UUID player;
 	@Getter
 	private EditStats[] changes;
-
+	
 	@Override
-	public void read(DataBuffer buffer) {
-		player = buffer.readUUID();
-		changes = new EditStats[buffer.readByte()];
-
-		for (int i = 0; i < changes.length; i++) {
-			Game game = Game.values()[buffer.readByte()];
-			Action action = Action.values()[buffer.readByte()];
-			StatsKey key = StatsKey.values()[buffer.readableBytes()];
-			Object value = null;
-			int id = -1;
-			switch (id = buffer.readByte()) { // Value Type
+	public void write(DataBuffer buffer) {
+		buffer.writeUUID(player);
+		
+		buffer.writeByte(changes.length);
+		for(EditStats stats : changes){
+			buffer.writeByte(stats.game.ordinal());
+			buffer.writeByte(stats.action.ordinal());
+			buffer.writeByte(stats.key.ordinal());
+			buffer.writeByte(stats.key.getClassId());
+			switch (stats.key.getClassId()) { // Value Type
 			case 0:
-				value = buffer.readInt();
+				buffer.writeInt((int) stats.value);
 				break;
 			case 1:
-				value = buffer.readDouble();
+				buffer.writeDouble((double) stats.value);
 				break;
 			case 2:
-				value = buffer.readString();
+				buffer.writeString((String) stats.value);
 				break;
 			default:
-				System.out.println("Wron stats id: " + id);
+				System.out.println("Wron stats id: -1");
 				break;
 			}
-			changes[i] = new EditStats(game, action,key, value);
 		}
 	}
 }

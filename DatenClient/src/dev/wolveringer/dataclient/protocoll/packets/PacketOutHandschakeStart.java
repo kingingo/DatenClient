@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public class PacketHandschakeOutStart extends Packet{
+public class PacketOutHandschakeStart extends Packet{
 	@Getter
 	private String host;
 	@Getter

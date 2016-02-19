@@ -4,13 +4,17 @@ import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @NoArgsConstructor
-public class PacketOutDisconnect extends Packet{
+@AllArgsConstructor
+public class PacketDisconnect extends Packet{
 	private String reson = null;
 	
 	@Override
-	public void write(DataBuffer buffer) {
-		buffer.writeString(reson);
+	public void read(DataBuffer buffer) {
+		reson = buffer.readString();
+	}
+	
+	public String getReson() {
+		return reson;
 	}
 }

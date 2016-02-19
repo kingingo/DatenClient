@@ -3,11 +3,12 @@ package dev.wolveringer.dataclient.protocoll.packets;
 import java.util.UUID;
 
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-public class PacketInConnectionStatus extends Packet{
+@AllArgsConstructor
+public class PacketOutConnectionStatus extends Packet{
 	public static enum Status {
 		CONNECTED,
 		DISCONNECTED;
@@ -21,8 +22,8 @@ public class PacketInConnectionStatus extends Packet{
 	private Status status;
 	
 	@Override
-	public void read(DataBuffer buffer) {
-		player = buffer.readUUID();
-		status = Status.values()[buffer.readByte()];
+	public void write(DataBuffer buffer) {
+		buffer.writeUUID(player);
+		buffer.writeByte(status.ordinal());
 	}
 }

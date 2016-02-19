@@ -3,19 +3,20 @@ package dev.wolveringer.dataclient.protocoll.packets;
 import java.util.UUID;
 
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.gamestats.Game;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-public class PacketInBanStatsRequest extends Packet{
-	@Getter
+@Getter
+public class PacketOutStatsRequest extends Packet{
 	private UUID player;
-	@Getter
-	private String ip;
-	
+	private Game game;
+
 	@Override
 	public void write(DataBuffer buffer) {
 		buffer.writeUUID(player);
-		buffer.writeString(ip);
+		buffer.writeByte(game.ordinal());
 	}
 }
