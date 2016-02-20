@@ -17,13 +17,13 @@ public class PacketOutConnectionStatus extends Packet{
 		}
 	}
 	@Getter
-	private UUID player;
+	private String player;
 	@Getter
 	private Status status;
 	
 	@Override
 	public void write(DataBuffer buffer) {
-		buffer.writeUUID(player);
+		buffer.writeString(player);
 		buffer.writeByte(status.ordinal());
 	}
 }

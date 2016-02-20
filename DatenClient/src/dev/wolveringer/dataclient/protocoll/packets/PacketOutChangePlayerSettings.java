@@ -3,12 +3,15 @@ package dev.wolveringer.dataclient.protocoll.packets;
 import java.util.UUID;
 
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 public class PacketOutChangePlayerSettings extends Packet{
 	public static enum Setting {
 		PREMIUM_LOGIN,
-		PASSWORD;
+		PASSWORD,
+		UUID;
 	}
 	@Getter
 	private UUID player;

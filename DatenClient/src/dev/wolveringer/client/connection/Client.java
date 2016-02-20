@@ -3,6 +3,7 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
@@ -23,6 +24,8 @@ public class Client {
 	protected String name;
 	
 	private byte[] password;
+	
+	private int timeout = 5000;
 	
 	public Client(InetSocketAddress target,ClientType type,String clientName) {
 		this.target = target;
@@ -45,6 +48,18 @@ public class Client {
 		
 		//Handschaking
 		writePacket(new PacketOutHandschakeStart(host, name, password, type));
+		
+		long start = System.currentTimeMillis();
+		while (!boss.handschakeComplete) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if(start+timeout<System.currentTimeMillis())
+				throw new RuntimeException("Handschke needs longer than 5000ms");
+		}
+		System.out.println("Connected");
 	}
 	
 	public void disconnect(){
@@ -58,6 +73,7 @@ public class Client {
 	protected void closePipeline(){
 		reader.close();
 		writer.close();
+		System.out.println("Client disconnected.");
 	}
 	
 	public void writePacket(Packet packet){
@@ -67,7 +83,7 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-	protected PacketHandlerBoss getHandlerBoss(){
+	public PacketHandlerBoss getHandlerBoss(){
 		return boss;
 	}
 	

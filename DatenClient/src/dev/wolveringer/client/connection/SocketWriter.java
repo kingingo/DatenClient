@@ -18,7 +18,6 @@ public class SocketWriter {
 
 	public void write(Packet packet) throws IOException {
 		int id = Packet.getPacketId(packet);
-
 		if (id == -1) {
 			System.out.println("Cant find Packet: " + packet);
 			return;
