@@ -74,6 +74,7 @@ public abstract class Packet {
 		registerPacket(0x07, PacketOutStatsRequest.class, PacketDirection.TO_SERVER);
 		registerPacket(0x08, PacketOutUUIDRequest.class, PacketDirection.TO_SERVER);
 		registerPacket(0x09, PacketOutGetServer.class, PacketDirection.TO_SERVER);
+		registerPacket(0x0A, PacketOutBanPlayer.class, PacketDirection.TO_SERVER);
 		
 		registerPacket(0xF0, PacketInPacketStatus.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x00, PacketInHandschakeAccept.class, PacketDirection.TO_CLIENT);
@@ -81,6 +82,7 @@ public abstract class Packet {
 		registerPacket(0x02, PacketInPlayerSettings.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x03, PacketInUUIDResponse.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x04, PacketInPlayerServer.class, PacketDirection.TO_CLIENT);
+		registerPacket(0x05, PacketInBanStats.class, PacketDirection.TO_CLIENT);
 	}
 
 	@Getter

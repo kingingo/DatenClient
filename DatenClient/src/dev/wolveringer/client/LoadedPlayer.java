@@ -2,23 +2,30 @@ package dev.wolveringer.client;
 
 import java.util.UUID;
 
+import dev.wolveringer.client.futures.BanStatsResponseFuture;
 import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
+import dev.wolveringer.client.futures.StatusResponseFuture;
+import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanPlayer;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanStatsRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus.Status;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.EditStats;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutGetServer;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutPlayerSettingsRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerSwitch;
-import dev.wolveringer.dataserver.gamestats.Game;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
 
-public abstract class LoadedPlayer {
+public class LoadedPlayer {
 
 	private UUID uuid;
 	private String name;
@@ -26,7 +33,7 @@ public abstract class LoadedPlayer {
 
 	private boolean loaded;
 
-	public LoadedPlayer(ClientWrapper client, String name) {
+	protected LoadedPlayer(ClientWrapper client, String name) {
 		this.name = name;
 		this.handle = client;
 
@@ -122,9 +129,21 @@ public abstract class LoadedPlayer {
 	}
 
 	public ServerResponseFurure getServer() {
-		PacketOutGetServer p = new PacketOutGetServer(uuid);
+		PacketOutGetServer p = new PacketOutGetServer(getUUID());
 		ServerResponseFurure f = new ServerResponseFurure(handle.handle, p, uuid);
 		handle.handle.writePacket(p);
 		return f;
+	}
+	public StatusResponseFuture setStats(EditStats[] changes){
+		return handle.writePacket(new PacketOutStatsEdit(getUUID(), changes));
+	}
+	public BanStatsResponseFuture getBanStats(String ip){
+		PacketOutBanStatsRequest p = new PacketOutBanStatsRequest(getUUID(),ip, name);
+		BanStatsResponseFuture f = new BanStatsResponseFuture(handle.handle, p);
+		handle.handle.writePacket(p);
+		return f;
+	}
+	public StatusResponseFuture banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
+		return handle.writePacket(new PacketOutBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
 	}
 }

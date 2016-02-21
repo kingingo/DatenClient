@@ -3,10 +3,10 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
+import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInStats;
-import dev.wolveringer.dataserver.gamestats.Game;
-import dev.wolveringer.dataserver.gamestats.Statistic;
 
 public class StatsResponseFuture extends PacketResponseFuture<Statistic[]>{
 	private UUID player;

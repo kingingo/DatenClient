@@ -2,8 +2,8 @@ package dev.wolveringer.dataclient.protocoll.packets;
 
 import java.util.UUID;
 
+import dev.wolveringer.dataclient.gamestats.Game;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataserver.gamestats.Game;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

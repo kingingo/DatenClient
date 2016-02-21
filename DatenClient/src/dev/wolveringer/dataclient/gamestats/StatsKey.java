@@ -1,4 +1,4 @@
-package dev.wolveringer.dataserver.gamestats;
+package dev.wolveringer.dataclient.gamestats;
 
 import java.util.HashMap;
 
