@@ -2,11 +2,16 @@ package dev.wolveringer.client;
 
 public abstract class ProgressFuture<T> {
 	private int timeout = 5000;
-	private int sleep = 50;
+	private int sleep = 25;
 	private T response = null;
-
+	private PacketHandleErrorException exception;
+	
+	
 	protected void done(T response) {
 		this.response = response;
+	}
+	protected void done(PacketHandleErrorException e) {
+		this.exception = e;
 	}
 
 	public boolean haveResponse() {
@@ -28,6 +33,8 @@ public abstract class ProgressFuture<T> {
 	public T getSyncSave(int timeout) throws RuntimeException {
 		long start = System.currentTimeMillis();
 		while (response == null) {
+			if(exception != null)
+				throw exception;
 			try {
 				Thread.sleep(sleep);
 			} catch (InterruptedException e) {

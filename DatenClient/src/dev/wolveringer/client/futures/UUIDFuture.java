@@ -10,13 +10,13 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey
 public class UUIDFuture extends PacketResponseFuture<UUIDKey[]>{
 	private String[] names;
 	
-	public UUIDFuture(Client client,String[] names) {
-		super(client);
+	public UUIDFuture(Client client,Packet handeling,String[] names) {
+		super(client,handeling);
 		this.names = names;
 	}
 	
 	@Override
-	public void handle(Packet packet) {
+	public void handlePacket(Packet packet) {
 		if(packet instanceof PacketInUUIDResponse && Arrays.equals(((PacketInUUIDResponse) packet).getNames(), names)){
 			done(((PacketInUUIDResponse)packet).getUuids());
 		}

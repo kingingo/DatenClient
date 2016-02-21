@@ -15,7 +15,7 @@ public class ClientWrapper {
 	
 	public UUIDFuture getUUID(String...players){
 		Packet packet = new PacketOutUUIDRequest(players);
-		UUIDFuture future = new UUIDFuture(handle, players);
+		UUIDFuture future = new UUIDFuture(handle, packet, players);
 		handle.writePacket(packet);
 		return future;
 	}

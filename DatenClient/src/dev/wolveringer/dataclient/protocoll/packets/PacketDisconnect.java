@@ -14,6 +14,11 @@ public class PacketDisconnect extends Packet{
 		reson = buffer.readString();
 	}
 	
+	@Override
+	public void write(DataBuffer buffer) {
+		buffer.writeString(reson);
+	}
+	
 	public String getReson() {
 		return reson;
 	}

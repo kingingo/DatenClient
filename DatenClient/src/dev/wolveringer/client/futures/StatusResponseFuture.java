@@ -11,12 +11,12 @@ public class StatusResponseFuture extends PacketResponseFuture<Error[]>{
 	private UUID packet;
 	
 	public StatusResponseFuture(Client client,UUID packet) {
-		super(client);
+		super(client,null);
 		this.packet = packet;
 	}
 	
 	@Override
-	public void handle(Packet packet) {
+	public void handlePacket(Packet packet) {
 		if(packet instanceof PacketInPacketStatus && ((PacketInPacketStatus) packet).getPacketId().equals(this.packet)){
 			done(((PacketInPacketStatus) packet).getErrors());
 		}

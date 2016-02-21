@@ -10,12 +10,12 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.Setti
 public class SettingsResponseFuture extends PacketResponseFuture<SettingValue[]>{
 	private UUID player;
 	
-	public SettingsResponseFuture(Client client,UUID player) {
-		super(client);
+	public SettingsResponseFuture(Client client,Packet handeling,UUID player) {
+		super(client,handeling);
 		this.player = player;
 	}
 	@Override
-	public void handle(Packet packet) {
+	public void handlePacket(Packet packet) {
 		if(packet instanceof PacketInPlayerSettings && ((PacketInPlayerSettings) packet).getPlayer().equals(player))
 			done(((PacketInPlayerSettings) packet).getValues());
 	}

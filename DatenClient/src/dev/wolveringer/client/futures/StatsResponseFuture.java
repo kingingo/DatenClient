@@ -12,14 +12,14 @@ public class StatsResponseFuture extends PacketResponseFuture<Statistic[]>{
 	private UUID player;
 	private Game game;
 	
-	public StatsResponseFuture(Client client,UUID player,Game game) {
-		super(client);
+	public StatsResponseFuture(Client client,Packet handeling,UUID player,Game game) {
+		super(client,handeling);
 		this.player = player;
 		this.game = game;
 	}
 	
 	@Override
-	public void handle(Packet packet) {
+	public void handlePacket(Packet packet) {
 		if(packet instanceof PacketInStats && ((PacketInStats) packet).getPlayer().equals(player) && ((PacketInStats) packet).getGame().ordinal() == game.ordinal())
 			done(((PacketInStats) packet).getStats());
 	}

@@ -3,10 +3,11 @@ package dev.wolveringer.dataclient.protocoll.packets;
 import java.util.UUID;
 
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
+@AllArgsConstructor
 public class PacketOutServerSwitch extends Packet {
 	@Getter
 	private UUID player;
