@@ -1,39 +1,93 @@
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.client.connection.ClientType;
+import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.dataclient.gamestats.Game;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInBanStats.BanEntity;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
 public class Teast {
 	public static void main(String[] args) {
-		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.SERVER, "01");
+		String name = "bungee02";
+		Client client = Client.createBungeecordClient(name, new InetSocketAddress("localhost", 1111), new BungeeCordActionListener() {
+			@Override
+			public void sendMessage(UUID player, String message) {
+				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
+			}
+			
+			@Override
+			public void kickPlayer(UUID player, String message) {
+				System.out.println("["+name+"] Kickplayer: "+player+" Message: "+message);
+			}
+			
+			@Override
+			public void brotcast(String permission, String message) {
+				System.out.println("["+name+"] Brotcast: "+message+" Permission: "+permission);
+			}
+			
+			@Override
+			public void sendPlayer(UUID player, String server) {
+				System.out.println("["+name+"] Send "+player+" Server: "+server);
+			}
+			@Override
+			public void disconnected() {
+				System.out.println("Disconnected");
+			}
+			@Override
+			public void connected() {}
+		});
 		client.connect("HelloWorld".getBytes());
 		System.out.println(">> Connected");
 		ClientWrapper wclient = new ClientWrapper(client);
 		System.out.println(">> Create Player");
+		/*
+		LoadedPlayer player = wclient.getPlayer(UUID.fromString("57091d6f-839f-48b7-a4b1-4474222d4ad1"));
+		if(player != null)
+			player.load();
+		else
+			System.out.println("X");
+		System.out.println("Player: "+player.getName()+"/"+player.getUUID());
+		*/
 		LoadedPlayer player = wclient.getPlayer("WolverinDEV");
 		player.load();
-		
+		//player.setServerSync("lobby0");
+		wclient.sendMessage(player.getUUID(), "Hello world");
 		//testPremiumSystem(player);
 		//testServerSwitch(player);
 		
+		//testGetRequestStats(player);
 		/*
-		testGetRequestStats(player);
 		testStatsEdit(player);
 		testGetRequestStats(player);
 		*/
 		//testBan(player);
 		
-		
-		
-		System.exit(-1);
+		//TEST GEMS/COINS
+		try{
+			System.out.println("Gems: "+player.getGemsSync());
+			player.changeGems(Action.ADD, 100).getSync();
+			System.out.println("Gems: "+player.getGemsSync());
+			
+			System.out.println("Coins: "+player.getCoinsSync());
+			player.changeCoins(Action.ADD, 10).getSync();
+			System.out.println("Coins: "+player.getCoinsSync());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//player.unload();
+		while (true) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		//System.exit(-1);
 	}
 	
 	public static void testBan(LoadedPlayer player){
@@ -86,3 +140,13 @@ public class Teast {
 		System.out.println("Needed time: "+(System.currentTimeMillis()-start));
 	}
 }
+/*
+- Acarde Server verwatlten
+- ChatAPI [-]
+- Server Action [Kicken,Senden] [+]
+- Coins und gems in stats implimentieren.
+
+
+Later:
+
+*/

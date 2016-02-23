@@ -1,5 +1,7 @@
 package dev.wolveringer.client;
 
+import dev.wolveringer.client.threadfactory.ThreadFactory;
+
 public abstract class ProgressFuture<T> {
 	private int timeout = 5000;
 	private int sleep = 25;
@@ -22,7 +24,7 @@ public abstract class ProgressFuture<T> {
 		return getSyncSave();
 	}
 
-	public T getSyncSave() throws RuntimeException {
+	public T getSyncSave() throws PacketHandleErrorException {
 		return getSyncSave(timeout);
 	}
 
@@ -30,7 +32,7 @@ public abstract class ProgressFuture<T> {
 		return getSyncSave(timeout);
 	}
 
-	public T getSyncSave(int timeout) throws RuntimeException {
+	public T getSyncSave(int timeout) throws PacketHandleErrorException {
 		long start = System.currentTimeMillis();
 		while (response == null) {
 			if(exception != null)
@@ -53,7 +55,7 @@ public abstract class ProgressFuture<T> {
 	}
 
 	public void getAsync(Callback<T> call, int timeout) {
-		new Thread() {
+		ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
 				T out = null;
@@ -64,6 +66,6 @@ public abstract class ProgressFuture<T> {
 				}
 				call.call(out);
 			}
-		}.start();
+		}).start();
 	}
 }

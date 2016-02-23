@@ -3,13 +3,15 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.io.InputStream;
 
+import dev.wolveringer.client.threadfactory.ThreadFactory;
+import dev.wolveringer.client.threadfactory.ThreadRunner;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 
 public class ReaderThread {
 	private Client client;
 	private InputStream in;
-	private Thread reader;
+	private ThreadRunner reader;
 	private boolean active;
 
 	public ReaderThread(Client client, InputStream in) {
@@ -19,17 +21,22 @@ public class ReaderThread {
 	}
 
 	private void init() {
-		reader = new Thread(new Runnable() {
+		reader = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					while (active) {
+						if(!client.socket.isConnected()){
+							client.closePipeline();
+							return;
+						}
 						if(in.available() > 0)
 							readPacket();
 						else
 							Thread.sleep(10);
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					if (!active)
 						return;
 					System.err.println("Reader Broken");
@@ -65,7 +72,6 @@ public class ReaderThread {
 			close0();
 	}
 
-	@SuppressWarnings("deprecation")
 	private void close0() {
 		active = false;
 		if (in != null)
@@ -76,6 +82,7 @@ public class ReaderThread {
 		if (reader != null) {
 			reader.stop();
 		}
+		client.closePipeline();
 	}
 
 }

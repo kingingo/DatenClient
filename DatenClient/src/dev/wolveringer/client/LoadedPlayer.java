@@ -3,15 +3,18 @@ package dev.wolveringer.client;
 import java.util.UUID;
 
 import dev.wolveringer.client.futures.BanStatsResponseFuture;
+import dev.wolveringer.client.futures.PacketResponseFuture;
 import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsRequest;
+import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus.Error;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanPlayer;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanStatsRequest;
@@ -19,6 +22,7 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSetting
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus.Status;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.EditStats;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutGetServer;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutPlayerSettingsRequest;
@@ -68,7 +72,6 @@ public class LoadedPlayer {
 	public void load() { //TODO check
 		handle.writePacket(new PacketOutConnectionStatus(name, Status.CONNECTED)).getSync(); //Load player
 		loaded = true;
-		System.out.println("Player loaded");
 		loadUUID();
 	}
 
@@ -85,7 +88,39 @@ public class LoadedPlayer {
 		handle.handle.writePacket(packet);
 		return future;
 	}
+	
+	public int getCoinsSync() {
+		if (!loaded)
+			throw new RuntimeException("Player not loaded. Invoke load() at first");
+		Packet packet = new PacketOutStatsRequest(getUUID(), Game.Money);
+		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), Game.Money);
+		handle.handle.writePacket(packet);
+		for(Statistic s : future.getSync())
+			if(s.getStatsKey() == StatsKey.COINS)
+				return s.asInt();
+		return -1;
+	}
+	
+	public PacketResponseFuture<Error[]> changeCoins(Action action,int coins){
+		return setStats(new EditStats(Game.Money, action, StatsKey.COINS, coins));
+	}
 
+	public int getGemsSync() {
+		if (!loaded)
+			throw new RuntimeException("Player not loaded. Invoke load() at first");
+		Packet packet = new PacketOutStatsRequest(getUUID(), Game.Money);
+		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), Game.Money);
+		handle.handle.writePacket(packet);
+		for(Statistic s : future.getSync())
+			if(s.getStatsKey() == StatsKey.GEMS)
+				return s.asInt();
+		return -1;
+	}
+
+	public PacketResponseFuture<Error[]> changeGems(Action action,int coins){
+		return setStats(new EditStats(Game.Money, action, StatsKey.GEMS, coins));
+	}
+	
 	public SettingsResponseFuture getSettings(Setting... settings) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
@@ -134,7 +169,7 @@ public class LoadedPlayer {
 		handle.handle.writePacket(p);
 		return f;
 	}
-	public StatusResponseFuture setStats(EditStats[] changes){
+	public StatusResponseFuture setStats(EditStats... changes){
 		return handle.writePacket(new PacketOutStatsEdit(getUUID(), changes));
 	}
 	public BanStatsResponseFuture getBanStats(String ip){

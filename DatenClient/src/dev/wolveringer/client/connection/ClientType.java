@@ -2,7 +2,8 @@ package dev.wolveringer.client.connection;
 
 public enum ClientType {
 	BUNGEECORD,
-	SERVER,
+	LOBBY,
+	ACARDE,
 	OTHER;
 	private ClientType() {}
 }

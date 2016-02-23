@@ -2,15 +2,24 @@ package dev.wolveringer.client.connection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import dev.wolveringer.client.external.BungeeCordActionListener;
+import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
+import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
+import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.Target;
 import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
+import dev.wolveringer.dataclient.protocoll.packets.PacketInGammodeChange;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInHandschakeAccept;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse;
+import dev.wolveringer.dataclient.protocoll.packets.PacketPingPong;
+import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
+import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.PlayerAction;
 
 public class PacketHandlerBoss {
 	private List<PacketListener> listener = new ArrayList<>();
@@ -76,14 +85,56 @@ public class PacketHandlerBoss {
 		}
 		else if(packet instanceof PacketInUUIDResponse){
 			if(debug){
-			System.out.println("UUID response");
-			for(UUIDKey k : ((PacketInUUIDResponse)packet).getUuids())
-				System.out.println(k.getName()+" - "+k.getUuid());
+				System.out.println("UUID response");
+				for(UUIDKey k : ((PacketInUUIDResponse)packet).getUuids())
+					System.out.println(k.getName()+" - "+k.getUuid());
 			}
 		}
 		else
 			if(debug)
 				System.out.println("Handle: "+packet);
+		if(packet instanceof PacketServerAction){
+			System.out.println("Player server action not implimted yet!");
+			for(PlayerAction a : ((PacketServerAction) packet).getActions()){
+				switch (a.getAction()) {
+				case KICK:
+					owner.getExternalHandler().kickPlayer(a.getPlayer(),a.getValue());
+					break;
+				case SEND:
+					if(!(owner.getExternalHandler() instanceof BungeeCordActionListener))
+						System.out.println("Player sending not supported");
+					else
+						((BungeeCordActionListener)owner.getExternalHandler()).sendPlayer(a.getPlayer(), a.getValue());
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		else if(packet instanceof PacketInGammodeChange){
+			if(!(owner.getExternalHandler() instanceof ServerActionListener))
+				System.out.println("Gammodechange not supported");
+			else{
+				((ServerActionListener)owner.getExternalHandler()).setGamemode(((PacketInGammodeChange) packet).getGame());
+			}
+		}
+		else if(packet instanceof PacketChatMessage){
+			for(Target t : ((PacketChatMessage) packet).getTargets()){
+				switch (t.getType()) {
+				case BROTCAST:
+					owner.getExternalHandler().brotcast(t.getPermission(), ((PacketChatMessage) packet).getMessage());
+					break;
+				case PLAYER:
+					owner.getExternalHandler().sendMessage(UUID.fromString(t.getTarget()),((PacketChatMessage) packet).getMessage());
+				default:
+					break;
+				}
+			}
+		}
+		else if(packet instanceof PacketPingPong){
+			owner.lastPing = System.currentTimeMillis()-((PacketPingPong)packet).getTime();
+			owner.lastPingTime = System.currentTimeMillis();
+		}
 		for(PacketListener l : new ArrayList<>(listener))
 			l.handle(packet);
 		if(!handschakeComplete)
