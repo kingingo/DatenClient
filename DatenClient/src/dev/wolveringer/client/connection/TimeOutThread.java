@@ -23,7 +23,11 @@ public class TimeOutThread {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					owner.writePacket(new PacketPingPong(System.currentTimeMillis()));
+					try{
+						owner.writePacket(new PacketPingPong(System.currentTimeMillis()));
+					}catch(Exception e){
+					
+					}
 					if(System.currentTimeMillis()-owner.lastPingTime>maxTime&& owner.lastPingTime != -1){
 						owner.closePipeline();
 						System.out.println("Timed out");

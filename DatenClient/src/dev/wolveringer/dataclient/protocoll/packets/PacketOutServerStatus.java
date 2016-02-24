@@ -2,10 +2,11 @@ package dev.wolveringer.dataclient.protocoll.packets;
 
 import dev.wolveringer.dataclient.gamestats.Game;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class PacketOutServerStatus extends Packet{
 	private int bitmask = 0; //TODO minimize data
@@ -16,7 +17,17 @@ public class PacketOutServerStatus extends Packet{
 	private boolean lobby;
 	
 	@Override
+	public void read(DataBuffer buffer) {
+		bitmask = buffer.readByte();
+		players = buffer.readInt();
+		maxPlayers = buffer.readInt();
+		mots = buffer.readString();
+		typ = Game.values()[buffer.readByte()];
+		lobby = buffer.readBoolean();
+	}
+	@Override
 	public void write(DataBuffer buffer) {
+		buffer.writeByte(bitmask);
 		buffer.writeInt(players);
 		buffer.writeInt(maxPlayers);
 		buffer.writeString(mots);

@@ -36,9 +36,11 @@ public class ReaderThread {
 							Thread.sleep(10);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					if(e.getMessage().equalsIgnoreCase("sleep interrupted"))
+						return;
 					if (!active)
 						return;
+					e.printStackTrace();
 					System.err.println("Reader Broken");
 					e.printStackTrace();
 					close0();

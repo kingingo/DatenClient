@@ -18,6 +18,6 @@ public class PacketInGammodeChange extends Packet{
 	
 	@Override
 	public void read(DataBuffer buffer) {
-		game = Game.values()[buffer.readInt()];
+		game = Game.values()[buffer.readByte()];
 	}
 }

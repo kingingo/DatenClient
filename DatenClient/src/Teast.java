@@ -4,7 +4,11 @@ import java.util.UUID;
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.client.connection.Client;
+import dev.wolveringer.client.connection.ClientType;
+import dev.wolveringer.client.connection.ServerInformations;
 import dev.wolveringer.client.external.BungeeCordActionListener;
+import dev.wolveringer.client.external.ServerActionListener;
+import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.dataclient.gamestats.Game;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
@@ -12,9 +16,24 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
 public class Teast {
+	static Client client;
 	public static void main(String[] args) {
-		String name = "bungee02";
-		Client client = Client.createBungeecordClient(name, new InetSocketAddress("localhost", 1111), new BungeeCordActionListener() {
+		String name = "a04";
+		ThreadFactory.setFactory(new ThreadFactory());
+		for(int i = 0;i<250;i++){
+			createClient(Game.BedWars, "acarde_"+i);
+		}
+		while (true) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private static void createClient(Game game,String name){
+		client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
 			@Override
 			public void sendMessage(UUID player, String message) {
 				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
@@ -31,15 +50,46 @@ public class Teast {
 			}
 			
 			@Override
-			public void sendPlayer(UUID player, String server) {
-				System.out.println("["+name+"] Send "+player+" Server: "+server);
+			public void setGamemode(Game game) {
+				System.out.println("Set gamemode");
+				System.out.println("Reconnecting");
+				client.disconnect("Gamemode change");
+				createClient(game, name);
 			}
 			@Override
 			public void disconnected() {
-				System.out.println("Disconnected");
+				System.out.println("Disconnected ["+name+"]");
+				System.out.println("Stopping ["+name+"]");
+				//System.exit(-1);
 			}
 			@Override
 			public void connected() {}
+		},new ServerInformations() {
+			
+			@Override
+			public boolean isIngame() {
+				return false;
+			}
+			
+			@Override
+			public Game getType() {
+				return game;
+			}
+			
+			@Override
+			public int getPlayers() {
+				return 0;
+			}
+			
+			@Override
+			public int getMaxPlayers() {
+				return 1;
+			}
+			
+			@Override
+			public String getMOTS() {
+				return "Client["+name+"]";
+			}
 		});
 		client.connect("HelloWorld".getBytes());
 		System.out.println(">> Connected");
@@ -53,10 +103,10 @@ public class Teast {
 			System.out.println("X");
 		System.out.println("Player: "+player.getName()+"/"+player.getUUID());
 		*/
-		LoadedPlayer player = wclient.getPlayer("WolverinDEV");
-		player.load();
+		//LoadedPlayer player = wclient.getPlayer("WolverinDEV");
+		//player.load();
 		//player.setServerSync("lobby0");
-		wclient.sendMessage(player.getUUID(), "Hello world");
+		//wclient.sendMessage(player.getUUID(), "Hello world");
 		//testPremiumSystem(player);
 		//testServerSwitch(player);
 		
@@ -68,6 +118,7 @@ public class Teast {
 		//testBan(player);
 		
 		//TEST GEMS/COINS
+		/*
 		try{
 			System.out.println("Gems: "+player.getGemsSync());
 			player.changeGems(Action.ADD, 100).getSync();
@@ -79,14 +130,9 @@ public class Teast {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		*/
 		//player.unload();
-		while (true) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		
 		//System.exit(-1);
 	}
 	

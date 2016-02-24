@@ -3,7 +3,6 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Random;
 
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
@@ -12,18 +11,19 @@ import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutHandschakeStart;
 import lombok.Getter;
-import sun.util.logging.resources.logging;
 
 public class Client {
-	public static Client createBungeecordClient(String name,InetSocketAddress target,BungeeCordActionListener listener){
+	public static Client createBungeecordClient(String name,InetSocketAddress target,BungeeCordActionListener listener,ServerInformations infos){
 		Client client = new Client(target, ClientType.BUNGEECORD, name);
 		client.externalHandler = listener;
+		client.infoSender = new ServerStatusSender(client, infos);
 		return client;
 	}
-	public static Client createServerClient(ClientType type,String name,InetSocketAddress target,ServerActionListener listener){
+	public static Client createServerClient(ClientType type,String name,InetSocketAddress target,ServerActionListener listener,ServerInformations infos){
 		if(type == ClientType.BUNGEECORD)
 			throw new RuntimeException();
 		Client client = new Client(target, type, name);
+		client.infoSender = new ServerStatusSender(client, infos);
 		client.externalHandler = listener;
 		return client;
 	}
@@ -51,6 +51,8 @@ public class Client {
 	private TimeOutThread timeOut;
 	
 	private boolean connected = false;
+	
+	private ServerStatusSender infoSender;
 	
 	Client(InetSocketAddress target,ClientType type,String clientName) {
 		this.target = target;
@@ -86,6 +88,7 @@ public class Client {
 				throw new RuntimeException("Handschke needs longer than 5000ms");
 		}
 		timeOut.start();
+		infoSender.start();
 	}
 	
 	public void disconnect(){
@@ -102,6 +105,11 @@ public class Client {
 		connected = false;
 		reader.close();
 		writer.close();
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		externalHandler.disconnected();
 	}
 	
