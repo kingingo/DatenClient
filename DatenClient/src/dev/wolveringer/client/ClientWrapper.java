@@ -54,6 +54,20 @@ public class ClientWrapper {
 			throw new NullPointerException("Player not found");
 		return getPlayer(name);
 	}
+	
+	public LoadedPlayer getPlayerAndLoad(String name){
+		LoadedPlayer player = getPlayer(name);
+		if(!player.isLoaded())
+			player.load();
+		return player;
+	}
+	public LoadedPlayer getPlayerAndLoad(UUID name){
+		LoadedPlayer player = getPlayer(name);
+		if(!player.isLoaded())
+			player.load();
+		return player;
+	}
+	
 	private String getName(UUID uuid){
 		PacketOutNameRequest r = new PacketOutNameRequest(new UUID[]{uuid});
 		NameFutureResponseFuture f = new NameFutureResponseFuture(handle, r, new UUID[]{uuid});

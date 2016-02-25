@@ -16,12 +16,11 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
 public class Teast {
-	static Client client;
 	public static void main(String[] args) {
 		String name = "a04";
 		ThreadFactory.setFactory(new ThreadFactory());
-		for(int i = 0;i<250;i++){
-			createClient(Game.BedWars, "acarde_"+i);
+		for(int i = 0;i<100;i++){
+			new TClient("acarde_"+i,Game.BedWars).start();;
 		}
 		while (true) {
 			try {
@@ -32,8 +31,10 @@ public class Teast {
 		}
 	}
 	
+	/*
 	private static void createClient(Game game,String name){
-		client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
+		
+		Client client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
 			@Override
 			public void sendMessage(UUID player, String message) {
 				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
@@ -53,8 +54,8 @@ public class Teast {
 			public void setGamemode(Game game) {
 				System.out.println("Set gamemode");
 				System.out.println("Reconnecting");
-				client.disconnect("Gamemode change");
-				createClient(game, name);
+				//client.disconnect("Gamemode change");
+				//createClient(game, name);
 			}
 			@Override
 			public void disconnected() {
@@ -91,6 +92,13 @@ public class Teast {
 				return "Client["+name+"]";
 			}
 		});
+		Runnable disconnect = new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				
+			}
+		};
 		client.connect("HelloWorld".getBytes());
 		System.out.println(">> Connected");
 		ClientWrapper wclient = new ClientWrapper(client);
@@ -130,12 +138,131 @@ public class Teast {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		*/
+		
 		//player.unload();
 		
 		//System.exit(-1);
 	}
+*/
 	
+	public static void testBan(LoadedPlayer player){
+		System.out.println("banned: "+ player.getBanStats(null).getSync());
+		player.banPlayer(null, "System", null, null, 5, System.currentTimeMillis()+100*1000, "Testing!").getSync();
+		System.out.println("banned: "+ player.getBanStats(null).getSync());
+		player.banPlayer(null, "System", null, null, 5, System.currentTimeMillis()-10, "Testing!").getSync();
+		System.out.println("banned: "+ player.getBanStats(null).getSync());
+	}
+	
+	private static void testStatsEdit(LoadedPlayer player){
+		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(Game.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
+	}
+	
+	private static void testGetRequestStats(LoadedPlayer player){
+		long start = System.currentTimeMillis();
+		Statistic[] stats = player.getStats(Game.SheepWars).getSync();
+		if(stats == null)
+			System.out.println("No stats found");
+		else
+			for(Statistic s : stats){
+				System.out.println("Stats: "+s.getStatsKey()+"="+s.getValue());
+			}
+		System.out.println("Needed time: "+(System.currentTimeMillis()-start));
+	}
+	
+	private static void testServerSwitch(LoadedPlayer player){
+		System.out.println("Currunt-Server: "+player.getServer().getSync());
+		System.out.println("Switch to lobby");
+		player.setServerSync("lobby");
+		System.out.println("Currunt-Server: "+player.getServer().getSync());
+		System.out.println("Switch to hub1");
+		player.setServerSync("hub1");
+		System.out.println("Currunt-Server: "+player.getServer().getSync());
+	}
+	
+	private static void testPremiumSystem(LoadedPlayer player){
+		long start = System.currentTimeMillis();
+		System.out.println("UUID: "+player.getUUID());
+		System.out.println("Password: "+player.getPasswordSync());
+		boolean premium = player.isPremiumSync();
+		System.out.println("Premium: "+premium);
+
+		player.setPremiumSync(!premium);
+		System.out.println("----- Setting Premium "+!premium+" ----");
+		
+		System.out.println("UUID: "+player.getUUID());
+		System.out.println("Password: "+player.getPasswordSync());
+		System.out.println("Premium: "+player.isPremiumSync());
+		System.out.println("Needed time: "+(System.currentTimeMillis()-start));
+	}
+}
+class TClient {
+	Client client;
+	
+	public TClient(String name,Game game) {
+		client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
+			@Override
+			public void sendMessage(UUID player, String message) {
+				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
+			}
+			
+			@Override
+			public void kickPlayer(UUID player, String message) {
+				System.out.println("["+name+"] Kickplayer: "+player+" Message: "+message);
+			}
+			
+			@Override
+			public void brotcast(String permission, String message) {
+				System.out.println("["+name+"] Brotcast: "+message+" Permission: "+permission);
+			}
+			
+			@Override
+			public void setGamemode(Game game) {
+				System.out.println("Set gamemode");
+				System.out.println("Reconnecting");
+				client.disconnect("Gamemode change");
+				new TClient(name, game).start();
+			}
+			@Override
+			public void disconnected() {
+				System.out.println("Disconnected ["+name+"]");
+				System.out.println("Stopping ["+name+"]");
+				//System.exit(-1);
+			}
+			@Override
+			public void connected() {}
+		},new ServerInformations() {
+			
+			@Override
+			public boolean isIngame() {
+				return false;
+			}
+			
+			@Override
+			public Game getType() {
+				return game;
+			}
+			
+			@Override
+			public int getPlayers() {
+				return 0;
+			}
+			
+			@Override
+			public int getMaxPlayers() {
+				return 1;
+			}
+			
+			@Override
+			public String getMOTS() {
+				return "Client["+name+"]";
+			}
+		});
+	}
+	
+	public void start(){
+		client.connect("HelloWorld".getBytes());
+		System.out.println(">> Connected");
+	}
 	public static void testBan(LoadedPlayer player){
 		System.out.println("banned: "+ player.getBanStats(null).getSync());
 		player.banPlayer(null, "System", null, null, 5, System.currentTimeMillis()+100*1000, "Testing!").getSync();

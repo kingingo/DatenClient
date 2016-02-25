@@ -70,12 +70,20 @@ public class LoadedPlayer {
 	}
 
 	public void load() { //TODO check
+		if(loaded)
+			return;
 		handle.writePacket(new PacketOutConnectionStatus(name, Status.CONNECTED)).getSync(); //Load player
 		loaded = true;
 		loadUUID();
 	}
 
+	public boolean isLoaded() {
+		return loaded;
+	}
+	
 	public void unload() { //TODO check
+		if(!loaded)
+			return;
 		loaded = false;
 		handle.writePacket(new PacketOutConnectionStatus(name, Status.DISCONNECTED)).getSync(); //Unload player
 	}

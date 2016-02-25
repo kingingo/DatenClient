@@ -8,6 +8,7 @@ public class TimeOutThread {
 	ThreadRunner runner;
 	Client owner;
 	long maxTime = 20000;
+	boolean active = false;
 	public TimeOutThread(Client cleint) {
 		this.owner = cleint;
 		init();
@@ -17,11 +18,10 @@ public class TimeOutThread {
 		runner = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
-				while (owner.socket.isConnected()) {
+				while (owner.socket.isConnected() && active) {
 					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 					}
 					try{
 						owner.writePacket(new PacketPingPong(System.currentTimeMillis()));
@@ -38,6 +38,12 @@ public class TimeOutThread {
 		});
 	}
 	public void start(){
+		active = true;
 		runner.start();
+	}
+
+	public void stop() {
+		active = false;
+		runner.stop();
 	}
 }

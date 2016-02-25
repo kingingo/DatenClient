@@ -16,11 +16,10 @@ public class ServerStatusSender {
 		this.thread = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
-				while (active && owner.socket.isConnected()) {
+				while (active && owner.socket.isConnected() && owner.isConnected()) {
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 					}
 					owner.writePacket(new PacketOutServerStatus(0, infos.getPlayers(), infos.getMaxPlayers(), infos.getMOTS(),infos.getType(), !infos.isIngame()));
 				}

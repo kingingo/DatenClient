@@ -50,7 +50,7 @@ public class Client {
 	protected long lastPing = -1;
 	private TimeOutThread timeOut;
 	
-	private boolean connected = false;
+	protected boolean connected = false;
 	
 	private ServerStatusSender infoSender;
 	
@@ -82,7 +82,6 @@ public class Client {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 			if(start+timeout<System.currentTimeMillis())
 				throw new RuntimeException("Handschke needs longer than 5000ms");
@@ -97,6 +96,7 @@ public class Client {
 	
 	public void disconnect(String message){
 		writePacket(new PacketDisconnect(message));
+		closePipeline();
 	}
 	
 	protected void closePipeline(){
@@ -105,6 +105,7 @@ public class Client {
 		connected = false;
 		reader.close();
 		writer.close();
+		timeOut.stop();
 		try {
 			socket.close();
 		} catch (IOException e) {
@@ -117,8 +118,14 @@ public class Client {
 		try {
 			writer.write(packet);
 		} catch (IOException e) {
-			if(e.getMessage().equalsIgnoreCase("Broken pipe"))
+			if(e.getMessage().equalsIgnoreCase("Broken pipe") || e.getMessage().equalsIgnoreCase("Connection reset"))
 				return;
+			if(e.getMessage().equalsIgnoreCase("Socket closed")){
+				connected = false;
+				reader.close();
+				writer.close();
+				return;
+			}
 			e.printStackTrace();
 		}
 	}
@@ -130,6 +137,9 @@ public class Client {
 	}
 	public long getPing() {
 		return lastPing;
+	}
+	public boolean isConnected() {
+		return connected;
 	}
 	public static void main(String[] args) throws InterruptedException {
 		System.out.println("Starting test Client");
