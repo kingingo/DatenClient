@@ -2,7 +2,7 @@ package dev.wolveringer.dataclient.protocoll.packets;
 
 import java.util.UUID;
 
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ public class PacketOutStatsEdit extends Packet {
 	@AllArgsConstructor
 	@Getter
 	public static class EditStats {
-		private Game game;
+		private GameType game;
 		private Action action;
 		private StatsKey key;
 		private Object value;

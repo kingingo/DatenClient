@@ -1,6 +1,6 @@
 package dev.wolveringer.dataclient.protocoll.packets;
 
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class PacketInGammodeChange extends Packet{
-	private Game game;
+	private GameType game;
 	
 	@Override
 	public void write(DataBuffer buffer) {
@@ -18,6 +18,6 @@ public class PacketInGammodeChange extends Packet{
 	
 	@Override
 	public void read(DataBuffer buffer) {
-		game = Game.values()[buffer.readByte()];
+		game = GameType.values()[buffer.readByte()];
 	}
 }

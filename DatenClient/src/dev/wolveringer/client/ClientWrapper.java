@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
+import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
+import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.TargetType;
@@ -16,6 +18,7 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketOutNameRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatusRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutUUIDRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
+import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInServerStatus.Action;
 
 public class ClientWrapper {
@@ -96,5 +99,13 @@ public class ClientWrapper {
 	public StatusResponseFuture kickPlayer(UUID player,String reson){
 		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[]{new PacketServerAction.PlayerAction(player, dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.Action.KICK, reson)});
 		return writePacket(action);
+	}
+	public StatusResponseFuture sendServerMessage(String target,String channel,DataBuffer buffer){
+		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
+		return writePacket(packet);
+	}
+	public StatusResponseFuture sendServerMessage(ClientType target,String channel,DataBuffer buffer){
+		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
+		return writePacket(packet);
 	}
 }

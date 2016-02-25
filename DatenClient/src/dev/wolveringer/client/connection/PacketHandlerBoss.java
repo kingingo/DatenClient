@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
+import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.Target;
@@ -20,6 +21,7 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.PlayerAction;
+import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
 
 public class PacketHandlerBoss {
 	private List<PacketListener> listener = new ArrayList<>();
@@ -134,6 +136,11 @@ public class PacketHandlerBoss {
 		else if(packet instanceof PacketPingPong){
 			owner.lastPing = System.currentTimeMillis()-((PacketPingPong)packet).getTime();
 			owner.lastPingTime = System.currentTimeMillis();
+		}
+		else if(packet instanceof PacketServerMessage){
+			DataBuffer buffer;
+			owner.getExternalHandler().serverMessage(((PacketServerMessage) packet).getChannel(), buffer = new DataBuffer(((PacketServerMessage) packet).getMessage()));
+			buffer.release();
 		}
 		for(PacketListener l : new ArrayList<>(listener))
 			l.handle(packet);

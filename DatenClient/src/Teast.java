@@ -1,6 +1,8 @@
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
+import javax.print.attribute.standard.MediaSize.NA;
+
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.client.connection.Client;
@@ -9,9 +11,10 @@ import dev.wolveringer.client.connection.ServerInformations;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
+import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
@@ -19,8 +22,8 @@ public class Teast {
 	public static void main(String[] args) {
 		String name = "a04";
 		ThreadFactory.setFactory(new ThreadFactory());
-		for(int i = 0;i<100;i++){
-			new TClient("acarde_"+i,Game.BedWars).start();;
+		for(int i = 0;i<5;i++){
+			new TClient("acarde_"+i,GameType.BedWars).start();;
 		}
 		while (true) {
 			try {
@@ -154,12 +157,12 @@ public class Teast {
 	}
 	
 	private static void testStatsEdit(LoadedPlayer player){
-		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(Game.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
+		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
 	}
 	
 	private static void testGetRequestStats(LoadedPlayer player){
 		long start = System.currentTimeMillis();
-		Statistic[] stats = player.getStats(Game.SheepWars).getSync();
+		Statistic[] stats = player.getStats(GameType.SheepWars).getSync();
 		if(stats == null)
 			System.out.println("No stats found");
 		else
@@ -197,8 +200,9 @@ public class Teast {
 }
 class TClient {
 	Client client;
-	
-	public TClient(String name,Game game) {
+	String name;
+	public TClient(String name,GameType game) {
+		this.name = name;
 		client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
 			@Override
 			public void sendMessage(UUID player, String message) {
@@ -216,7 +220,7 @@ class TClient {
 			}
 			
 			@Override
-			public void setGamemode(Game game) {
+			public void setGamemode(GameType game) {
 				System.out.println("Set gamemode");
 				System.out.println("Reconnecting");
 				client.disconnect("Gamemode change");
@@ -230,6 +234,14 @@ class TClient {
 			}
 			@Override
 			public void connected() {}
+			
+			@Override
+			public void serverMessage(String channel, DataBuffer buffer) {
+				System.out.println("Message in Channel: "+channel);
+				if(channel.equalsIgnoreCase("log"))
+					System.out.println("message: "+buffer.readString());
+			}
+			
 		},new ServerInformations() {
 			
 			@Override
@@ -238,7 +250,7 @@ class TClient {
 			}
 			
 			@Override
-			public Game getType() {
+			public GameType getType() {
 				return game;
 			}
 			
@@ -262,6 +274,9 @@ class TClient {
 	public void start(){
 		client.connect("HelloWorld".getBytes());
 		System.out.println(">> Connected");
+		DataBuffer buffer = new DataBuffer();
+		buffer.writeString("Hello world from "+name);
+		new ClientWrapper(client).sendServerMessage(ClientType.ACARDE, "log", buffer);
 	}
 	public static void testBan(LoadedPlayer player){
 		System.out.println("banned: "+ player.getBanStats(null).getSync());
@@ -272,12 +287,12 @@ class TClient {
 	}
 	
 	private static void testStatsEdit(LoadedPlayer player){
-		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(Game.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
+		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
 	}
 	
 	private static void testGetRequestStats(LoadedPlayer player){
 		long start = System.currentTimeMillis();
-		Statistic[] stats = player.getStats(Game.SheepWars).getSync();
+		Statistic[] stats = player.getStats(GameType.SheepWars).getSync();
 		if(stats == null)
 			System.out.println("No stats found");
 		else

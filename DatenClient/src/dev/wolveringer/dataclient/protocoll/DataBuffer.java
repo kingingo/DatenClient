@@ -39,20 +39,22 @@ public class DataBuffer extends ByteBuf {
 		return new String(buffer, 0, buffer.length);
 	}
 
-	public void writeString(String s) {
+	public DataBuffer writeString(String s) {
 		if (s != null) {
 			writeInt(s.length());
 			writeBytes(s.getBytes());
 		} else
 			writeInt(-1);
+		return this;
 	}
 	
 	public UUID readUUID(){
 		return new UUID(readLong(), readLong());
 	}
-	public void writeUUID(UUID uuid){
+	public DataBuffer writeUUID(UUID uuid){
 		writeLong(uuid.getMostSignificantBits());
 		writeLong(uuid.getLeastSignificantBits());
+		return this;
 	}
 
 	public ByteBufAllocator alloc() {
@@ -555,12 +557,14 @@ public class DataBuffer extends ByteBuf {
 		return handle.writableBytes();
 	}
 
-	public ByteBuf writeBoolean(boolean arg0) {
-		return handle.writeBoolean(arg0);
+	public DataBuffer writeBoolean(boolean arg0) {
+		handle.writeBoolean(arg0);
+		return this;
 	}
 
-	public ByteBuf writeByte(int arg0) {
-		return handle.writeByte(arg0);
+	public DataBuffer writeByte(int arg0) {
+		handle.writeByte(arg0);
+		return this;
 	}
 
 	public ByteBuf writeBytes(byte[] arg0, int arg1, int arg2) {
@@ -607,8 +611,9 @@ public class DataBuffer extends ByteBuf {
 		return handle.writeFloat(arg0);
 	}
 
-	public ByteBuf writeInt(int arg0) {
-		return handle.writeInt(arg0);
+	public DataBuffer writeInt(int arg0) {
+		handle.writeInt(arg0);
+		return this;
 	}
 
 	public ByteBuf writeLong(long arg0) {

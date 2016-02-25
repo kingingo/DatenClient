@@ -8,7 +8,7 @@ import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
@@ -88,7 +88,7 @@ public class LoadedPlayer {
 		handle.writePacket(new PacketOutConnectionStatus(name, Status.DISCONNECTED)).getSync(); //Unload player
 	}
 
-	public StatsResponseFuture getStats(Game game) {
+	public StatsResponseFuture getStats(GameType game) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		Packet packet = new PacketOutStatsRequest(getUUID(), game);
@@ -100,8 +100,8 @@ public class LoadedPlayer {
 	public int getCoinsSync() {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutStatsRequest(getUUID(), Game.Money);
-		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), Game.Money);
+		Packet packet = new PacketOutStatsRequest(getUUID(), GameType.Money);
+		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
 		for(Statistic s : future.getSync())
 			if(s.getStatsKey() == StatsKey.COINS)
@@ -110,14 +110,14 @@ public class LoadedPlayer {
 	}
 	
 	public PacketResponseFuture<Error[]> changeCoins(Action action,int coins){
-		return setStats(new EditStats(Game.Money, action, StatsKey.COINS, coins));
+		return setStats(new EditStats(GameType.Money, action, StatsKey.COINS, coins));
 	}
 
 	public int getGemsSync() {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutStatsRequest(getUUID(), Game.Money);
-		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), Game.Money);
+		Packet packet = new PacketOutStatsRequest(getUUID(), GameType.Money);
+		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
 		for(Statistic s : future.getSync())
 			if(s.getStatsKey() == StatsKey.GEMS)
@@ -126,7 +126,7 @@ public class LoadedPlayer {
 	}
 
 	public PacketResponseFuture<Error[]> changeGems(Action action,int coins){
-		return setStats(new EditStats(Game.Money, action, StatsKey.GEMS, coins));
+		return setStats(new EditStats(GameType.Money, action, StatsKey.GEMS, coins));
 	}
 	
 	public SettingsResponseFuture getSettings(Setting... settings) {

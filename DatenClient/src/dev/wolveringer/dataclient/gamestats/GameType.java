@@ -2,7 +2,7 @@ package dev.wolveringer.dataclient.gamestats;
 
 import lombok.Getter;
 
-public enum Game {
+public enum GameType {
 	GUNGAME(true, "GunGame-Server", "GunGame", ServerType.GUNGAME, new StatsKey[] { StatsKey.KILLS, StatsKey.DEATHS, StatsKey.LEVEL }),
 	SurvivalGames1vs1(false, "SurvivalGames1vs1", "SG1vs1", ServerType.GAME, new StatsKey[] { StatsKey.KILLS, StatsKey.DEATHS, StatsKey.WIN, StatsKey.LOSE }),
 	BedWars1vs1(false, "BedWars1vs1", "BW1vs1", ServerType.GAME, new StatsKey[] { StatsKey.KILLS, StatsKey.DEATHS, StatsKey.WIN, StatsKey.LOSE, StatsKey.BEDWARS_ZERSTOERTE_BEDs }),
@@ -37,7 +37,7 @@ public enum Game {
 	@Getter
 	private boolean solo = true;
 
-	private Game(boolean solo, String Typ, String Kuerzel, ServerType serverType, StatsKey[] stats) {
+	private GameType(boolean solo, String Typ, String Kuerzel, ServerType serverType, StatsKey[] stats) {
 		this.typ = Typ;
 		this.solo = solo;
 		this.stats = stats;
@@ -45,15 +45,15 @@ public enum Game {
 		this.serverType = serverType;
 	}
 
-	public static Game get(String g) {
+	public static GameType get(String g) {
 		g = g.replaceAll("-", "");
 		g = g.replaceAll(" ", "");
-		for (Game t : Game.values()) {
+		for (GameType t : GameType.values()) {
 			if (t.getTyp().replaceAll(" ", "").replaceAll("-", "").equalsIgnoreCase(g))
 				return t;
 		}
 
-		for (Game t : Game.values()) {
+		for (GameType t : GameType.values()) {
 			if (t.getKuerzel().replaceAll(" ", "").replaceAll("-", "").equalsIgnoreCase(g))
 				return t;
 		}

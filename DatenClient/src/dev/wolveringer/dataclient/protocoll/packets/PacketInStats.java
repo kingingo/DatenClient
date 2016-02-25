@@ -2,7 +2,7 @@ package dev.wolveringer.dataclient.protocoll.packets;
 
 import java.util.UUID;
 
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
@@ -13,13 +13,13 @@ import lombok.NoArgsConstructor;
 @Getter
 public class PacketInStats extends Packet{
 	private UUID player;
-	private Game game;
+	private GameType game;
 	private Statistic[] stats;
 	
 	@Override
 	public void read(DataBuffer buffer) {
 		player = buffer.readUUID();
-		game = Game.values()[buffer.readByte()];
+		game = GameType.values()[buffer.readByte()];
 		stats = new Statistic[buffer.readByte()];
 		
 		for(int i = 0;i<stats.length;i++){

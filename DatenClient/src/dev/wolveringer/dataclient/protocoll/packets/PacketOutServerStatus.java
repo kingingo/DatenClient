@@ -1,6 +1,6 @@
 package dev.wolveringer.dataclient.protocoll.packets;
 
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public class PacketOutServerStatus extends Packet{
 	private int players;
 	private int maxPlayers;
 	private String mots; //Message of the server :D equals <-> Message of the day (MOTD)
-	private Game typ;
+	private GameType typ;
 	private boolean lobby;
 	
 	@Override
@@ -22,7 +22,7 @@ public class PacketOutServerStatus extends Packet{
 		players = buffer.readInt();
 		maxPlayers = buffer.readInt();
 		mots = buffer.readString();
-		typ = Game.values()[buffer.readByte()];
+		typ = GameType.values()[buffer.readByte()];
 		lobby = buffer.readBoolean();
 	}
 	@Override

@@ -1,7 +1,7 @@
 package dev.wolveringer.client.external;
 
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 
 public interface ServerActionListener extends ActionListener{
-	public void setGamemode(Game game);
+	public void setGamemode(GameType game);
 }

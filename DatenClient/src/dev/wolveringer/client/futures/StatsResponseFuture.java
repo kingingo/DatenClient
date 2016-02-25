@@ -3,16 +3,16 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.gamestats.Game;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInStats;
 
 public class StatsResponseFuture extends PacketResponseFuture<Statistic[]>{
 	private UUID player;
-	private Game game;
+	private GameType game;
 	
-	public StatsResponseFuture(Client client,Packet handeling,UUID player,Game game) {
+	public StatsResponseFuture(Client client,Packet handeling,UUID player,GameType game) {
 		super(client,handeling);
 		this.player = player;
 		this.game = game;
