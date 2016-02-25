@@ -108,4 +108,7 @@ public class ClientWrapper {
 		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
 		return writePacket(packet);
 	}
+	public Client getHandle() {
+		return handle;
+	}
 }
