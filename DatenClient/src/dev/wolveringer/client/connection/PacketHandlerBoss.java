@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister.Pack;
+
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
@@ -11,6 +13,7 @@ import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.Target;
 import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
+import dev.wolveringer.dataclient.protocoll.packets.PacketForward;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInGammodeChange;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInHandschakeAccept;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus;
@@ -142,8 +145,15 @@ public class PacketHandlerBoss {
 			owner.getExternalHandler().serverMessage(((PacketServerMessage) packet).getChannel(), buffer = new DataBuffer(((PacketServerMessage) packet).getMessage()));
 			buffer.release();
 		}
-		for(PacketListener l : new ArrayList<>(listener))
-			l.handle(packet);
+		if(packet instanceof PacketForward){
+			Packet pack = ((PacketForward) packet).getPacket();
+			if(pack != null)
+			for(PacketListener l : new ArrayList<>(listener))
+				l.handle(pack);
+		}
+		else
+			for(PacketListener l : new ArrayList<>(listener))
+				l.handle(packet);
 		if(!handschakeComplete)
 			return;
 	}

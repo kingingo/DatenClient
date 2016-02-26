@@ -3,6 +3,8 @@ package dev.wolveringer.client;
 import java.util.HashMap;
 import java.util.UUID;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister.Pack;
+
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
@@ -12,6 +14,7 @@ import dev.wolveringer.client.futures.UUIDFuture;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
+import dev.wolveringer.dataclient.protocoll.packets.PacketForward;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.TargetType;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutNameRequest;
@@ -107,6 +110,14 @@ public class ClientWrapper {
 	public StatusResponseFuture sendServerMessage(ClientType target,String channel,DataBuffer buffer){
 		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
 		return writePacket(packet);
+	}
+	public StatusResponseFuture sendPacket(ClientType type,Packet packet){
+		PacketForward p = new PacketForward(type, packet);
+		return writePacket(p);
+	}
+	public StatusResponseFuture sendPacket(String target,Packet packet){
+		PacketForward p = new PacketForward(target, packet);
+		return writePacket(p);
 	}
 	public Client getHandle() {
 		return handle;

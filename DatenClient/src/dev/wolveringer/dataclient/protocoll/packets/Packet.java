@@ -46,7 +46,7 @@ public abstract class Packet {
 		return -1;
 	}
 	
-	protected static void registerPacket(int id,Class<? extends Packet> packet,PacketDirection direction){
+	public static void registerPacket(int id,Class<? extends Packet> packet,PacketDirection direction){
 		try {
 			if(direction == PacketDirection.TO_SERVER)
 				outPackets[id] = packet.getConstructors().length == 1 ? (Constructor<? extends Packet>) packet.getConstructors()[0] : packet.getConstructor();
@@ -81,6 +81,7 @@ public abstract class Packet {
 		registerPacket(0x0E, PacketOutServerStatusRequest.class, PacketDirection.TO_SERVER);
 		registerPacket(0x0F, PacketChatMessage.class, PacketDirection.TO_SERVER);
 		registerPacket(0x10, PacketServerMessage.class, PacketDirection.TO_SERVER);
+		registerPacket(0x11, PacketForward.class, PacketDirection.TO_SERVER);
 		
 		registerPacket(0xF0, PacketInPacketStatus.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x00, PacketInHandschakeAccept.class, PacketDirection.TO_CLIENT);
@@ -95,6 +96,7 @@ public abstract class Packet {
 		registerPacket(0x09, PacketChatMessage.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x0A, PacketInGammodeChange.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x0B, PacketServerMessage.class, PacketDirection.TO_CLIENT);
+		registerPacket(0x0C, PacketForward.class, PacketDirection.TO_SERVER);
 		
 		registerPacket(0xFE, PacketPingPong.class, PacketDirection.TO_CLIENT);
 		registerPacket(0xFE, PacketPingPong.class, PacketDirection.TO_SERVER);

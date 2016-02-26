@@ -189,4 +189,7 @@ public class LoadedPlayer {
 	public StatusResponseFuture banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
 		return handle.writePacket(new PacketOutBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
 	}
+	public StatusResponseFuture kickPlayer(String reson){
+		return handle.kickPlayer(getUUID(), reson);
+	}
 }
