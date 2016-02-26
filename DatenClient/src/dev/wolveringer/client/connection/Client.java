@@ -38,6 +38,7 @@ public class Client {
 	private PacketHandlerBoss boss;
 
 	protected String host = "underknown";
+	@Getter
 	protected String name;
 	
 	private byte[] password;
