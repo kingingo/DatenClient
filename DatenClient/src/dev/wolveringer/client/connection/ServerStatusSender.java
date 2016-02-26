@@ -17,7 +17,7 @@ public class ServerStatusSender {
 			@Override
 			public void run() {
 				while (active && owner.socket.isConnected() && owner.isConnected()) {
-					owner.writePacket(new PacketOutServerStatus(0, infos.getPlayers(), infos.getMaxPlayers(), infos.getMOTS(), infos.getType(), infos.getServerState(), infos.isVisiable(), infos.getServerId()));
+					owner.writePacket(i.getStatus());
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {

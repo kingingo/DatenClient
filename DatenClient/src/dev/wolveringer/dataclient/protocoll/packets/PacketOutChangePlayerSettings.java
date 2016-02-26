@@ -11,6 +11,7 @@ public class PacketOutChangePlayerSettings extends Packet{
 	public static enum Setting {
 		PREMIUM_LOGIN,
 		PASSWORD,
+		LANGUAGE,
 		UUID;
 	}
 	@Getter

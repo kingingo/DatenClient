@@ -25,6 +25,7 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.Setti
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.PlayerAction;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
+import dev.wolveringer.dataclient.protocoll.packets.PacketSettingUpdate;
 
 public class PacketHandlerBoss {
 	private List<PacketListener> listener = new ArrayList<>();
@@ -144,6 +145,9 @@ public class PacketHandlerBoss {
 			DataBuffer buffer;
 			owner.getExternalHandler().serverMessage(((PacketServerMessage) packet).getChannel(), buffer = new DataBuffer(((PacketServerMessage) packet).getMessage()));
 			buffer.release();
+		}
+		else if(packet instanceof PacketSettingUpdate){
+			owner.getExternalHandler().settingUpdate(((PacketSettingUpdate) packet).getPlayer(), ((PacketSettingUpdate) packet).getSetting(), ((PacketSettingUpdate) packet).getValue());
 		}
 		if(packet instanceof PacketForward){
 			Packet pack = ((PacketForward) packet).getPacket();

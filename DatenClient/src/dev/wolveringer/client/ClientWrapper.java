@@ -3,8 +3,6 @@ package dev.wolveringer.client;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister.Pack;
-
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;

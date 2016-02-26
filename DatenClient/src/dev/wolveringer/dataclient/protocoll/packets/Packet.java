@@ -82,6 +82,7 @@ public abstract class Packet {
 		registerPacket(0x0F, PacketChatMessage.class, PacketDirection.TO_SERVER);
 		registerPacket(0x10, PacketServerMessage.class, PacketDirection.TO_SERVER);
 		registerPacket(0x11, PacketForward.class, PacketDirection.TO_SERVER);
+		registerPacket(0x12, PacketSettingUpdate.class, PacketDirection.TO_SERVER);
 		
 		registerPacket(0xF0, PacketInPacketStatus.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x00, PacketInHandschakeAccept.class, PacketDirection.TO_CLIENT);
@@ -97,6 +98,7 @@ public abstract class Packet {
 		registerPacket(0x0A, PacketInGammodeChange.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x0B, PacketServerMessage.class, PacketDirection.TO_CLIENT);
 		registerPacket(0x0C, PacketForward.class, PacketDirection.TO_SERVER);
+		registerPacket(0x0D, PacketSettingUpdate.class, PacketDirection.TO_SERVER);
 		
 		registerPacket(0xFE, PacketPingPong.class, PacketDirection.TO_CLIENT);
 		registerPacket(0xFE, PacketPingPong.class, PacketDirection.TO_SERVER);

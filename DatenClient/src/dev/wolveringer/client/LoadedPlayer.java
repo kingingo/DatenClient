@@ -129,6 +129,13 @@ public class LoadedPlayer {
 		return setStats(new EditStats(GameType.Money, action, StatsKey.GEMS, coins));
 	}
 	
+	public LanguageType getLanguageSync(){
+		SettingValue[] response = getSettings(Setting.LANGUAGE).getSyncSave();
+		if (response.length == 1 && response[0].getSetting() == Setting.LANGUAGE)
+			return LanguageType.get(response[0].getValue());
+		return LanguageType.ENGLISH;
+	}
+	
 	public SettingsResponseFuture getSettings(Setting... settings) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
