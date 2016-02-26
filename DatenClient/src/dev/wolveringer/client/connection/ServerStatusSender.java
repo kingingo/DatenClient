@@ -2,7 +2,6 @@ package dev.wolveringer.client.connection;
 
 import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.client.threadfactory.ThreadRunner;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus;
 
 public class ServerStatusSender {
 	private ThreadRunner thread;
@@ -17,7 +16,7 @@ public class ServerStatusSender {
 			@Override
 			public void run() {
 				while (active && owner.socket.isConnected() && owner.isConnected()) {
-					owner.writePacket(i.getStatus());
+					updateServerStats();
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {
@@ -29,5 +28,8 @@ public class ServerStatusSender {
 	public void start(){
 		active = true;
 		thread.start();
+	}
+	public void updateServerStats() {
+		owner.writePacket(i.getStatus());
 	}
 }

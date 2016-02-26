@@ -53,7 +53,7 @@ public class Client {
 	
 	protected boolean connected = false;
 	
-	private ServerStatusSender infoSender;
+	protected ServerStatusSender infoSender;
 	
 	Client(InetSocketAddress target,ClientType type,String clientName) {
 		this.target = target;
@@ -149,5 +149,8 @@ public class Client {
 		while (true) {
 			Thread.sleep(10000);
 		}
+	}
+	public void updateServerStats() {
+		infoSender.updateServerStats();
 	}
 }

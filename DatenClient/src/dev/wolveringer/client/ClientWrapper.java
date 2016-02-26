@@ -117,6 +117,9 @@ public class ClientWrapper {
 		PacketForward p = new PacketForward(target, packet);
 		return writePacket(p);
 	}
+	public void updateServerStats(){
+		handle.updateServerStats();
+	}
 	public Client getHandle() {
 		return handle;
 	}
