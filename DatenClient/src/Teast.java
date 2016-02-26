@@ -16,6 +16,7 @@ import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus.GameState;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
 public class Teast {
@@ -245,7 +246,7 @@ class TClient {
 		},new ServerInformations() {
 			
 			@Override
-			public boolean isIngame() {
+			public boolean isVisiable() {
 				return false;
 			}
 			
@@ -267,6 +268,15 @@ class TClient {
 			@Override
 			public String getMOTS() {
 				return "Client["+name+"]";
+			}
+			
+			@Override
+			public String getServerId() {
+				return null;
+			}
+			@Override
+			public GameState getServerState() {
+				return GameState.LobbyPhase;
 			}
 		});
 	}

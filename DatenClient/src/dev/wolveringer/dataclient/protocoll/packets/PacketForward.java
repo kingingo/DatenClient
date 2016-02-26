@@ -46,6 +46,8 @@ public class PacketForward extends Packet{
 			ctarget = ClientType.values()[var0];
 		data = new byte[buffer.readInt()];
 		buffer.readBytes(data);
+		
+		buffer = new DataBuffer(data);
 		int packetId = buffer.readInt();
 		if((packet = Packet.createPacket(packetId, buffer)) != null){
 			

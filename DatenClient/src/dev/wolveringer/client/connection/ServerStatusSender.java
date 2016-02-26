@@ -17,11 +17,11 @@ public class ServerStatusSender {
 			@Override
 			public void run() {
 				while (active && owner.socket.isConnected() && owner.isConnected()) {
+					owner.writePacket(new PacketOutServerStatus(0, infos.getPlayers(), infos.getMaxPlayers(), infos.getMOTS(), infos.getType(), infos.getServerState(), infos.isVisiable(), infos.getServerId()));
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {
 					}
-					owner.writePacket(new PacketOutServerStatus(0, infos.getPlayers(), infos.getMaxPlayers(), infos.getMOTS(),infos.getType(), !infos.isIngame()));
 				}
 			}
 		});
