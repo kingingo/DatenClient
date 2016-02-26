@@ -8,7 +8,7 @@ import lombok.Getter;
 
 public abstract class Packet {
 	private static final boolean SERVER = false;
-	static enum PacketDirection {
+	public static enum PacketDirection {
 		TO_CLIENT,
 		TO_SERVER;
 		private PacketDirection() {}
