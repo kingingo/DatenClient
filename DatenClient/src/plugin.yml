@@ -1,0 +1,4 @@
+name: DatenClient
+main: dev.wolveringer.client.BungeePlugin
+version: 1.0
+author: WolverinDEV

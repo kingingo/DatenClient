@@ -62,16 +62,11 @@ public class Client {
 		this.timeOut = new TimeOutThread(this);
 	}	
 	
-	public void connect(byte[] password){
+	public void connect(byte[] password) throws Exception{
 		this.password = password;
-		try{
-			socket = new Socket(target.getAddress(),target.getPort());
-			this.writer = new SocketWriter(this, socket.getOutputStream());
-			this.reader = new ReaderThread(this, socket.getInputStream());
-		}catch(Exception e){
-			e.printStackTrace();
-			return;
-		}
+		socket = new Socket(target.getAddress(),target.getPort());
+		this.writer = new SocketWriter(this, socket.getOutputStream());
+		this.reader = new ReaderThread(this, socket.getInputStream());
 		connected = true;
 		this.boss = new PacketHandlerBoss(this);
 		this.reader.start();
@@ -145,7 +140,11 @@ public class Client {
 	public static void main(String[] args) throws InterruptedException {
 		System.out.println("Starting test Client");
 		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01");
-		client.connect("HelloWorld".getBytes());
+		try {
+			client.connect("HelloWorld".getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		while (true) {
 			Thread.sleep(10000);
 		}

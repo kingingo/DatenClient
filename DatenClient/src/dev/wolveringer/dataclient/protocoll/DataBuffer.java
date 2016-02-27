@@ -1,5 +1,6 @@
 package dev.wolveringer.dataclient.protocoll;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +29,13 @@ public class DataBuffer extends ByteBuf {
 
 	public DataBuffer(byte[] data) {
 		handle = Unpooled.copiedBuffer(data);
+	}
+
+	public DataBuffer(DataInputStream stream) throws IOException {
+		handle = Unpooled.buffer(stream.available());
+		byte[] buffer = new byte[stream.available()];
+		stream.read(buffer);
+		handle.writeBytes(buffer);
 	}
 
 	public String readString() {
