@@ -1,4 +1,4 @@
 name: DatenClient
-main: dev.wolveringer.client.BungeePlugin
+author: WolverinDEV & KingIngo
 version: 1.0
-author: WolverinDEV
+main: dev.wolveringer.client.BukkitPlugin
