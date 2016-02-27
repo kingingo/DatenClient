@@ -1,5 +1,6 @@
 package dev.wolveringer.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -63,13 +64,28 @@ public class ClientWrapper {
 		LoadedPlayer player = getPlayer(name);
 		if(!player.isLoaded())
 			player.load();
+		if(!players.containsKey(player.getName()))
+			players.put(player.getName(), player);
 		return player;
 	}
 	public LoadedPlayer getPlayerAndLoad(UUID name){
 		LoadedPlayer player = getPlayer(name);
 		if(!player.isLoaded())
 			player.load();
+		if(!uuidPlayers.containsKey(player.getUUID()))
+			uuidPlayers.put(player.getUUID(), player);
 		return player;
+	}
+	
+	public void clearCacheForPlayer(LoadedPlayer player){
+		if(player == null)
+			return;
+		for(String s : new ArrayList<>(players.keySet()))
+			if(players.get(s).equals(player))
+				players.remove(s);
+		for(UUID s : new ArrayList<>(uuidPlayers.keySet()))
+			if(uuidPlayers.get(s).equals(player))
+				uuidPlayers.remove(s);
 	}
 	
 	private String getName(UUID uuid){
@@ -122,5 +138,9 @@ public class ClientWrapper {
 	}
 	public Client getHandle() {
 		return handle;
+	}
+	protected void changeUUID(LoadedPlayer player,UUID oldUUID,UUID newUUID){
+		uuidPlayers.remove(oldUUID);
+		uuidPlayers.put(newUUID, player);
 	}
 }

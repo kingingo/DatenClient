@@ -169,9 +169,11 @@ public class LoadedPlayer {
 	public void setPremiumSync(boolean active) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		PacketOutChangePlayerSettings packet = new PacketOutChangePlayerSettings(getUUID(), Setting.PREMIUM_LOGIN, active + "");
+		UUID old = getUUID();
+		PacketOutChangePlayerSettings packet = new PacketOutChangePlayerSettings(old, Setting.PREMIUM_LOGIN, active + "");
 		handle.writePacket(packet).getSync();
 		loadUUID();
+		handle.changeUUID(this, old, getUUID());
 	}
 
 	public void setServerSync(String server) {

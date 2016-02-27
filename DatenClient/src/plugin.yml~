@@ -1,0 +1,4 @@
+name: kBungeeCord
+main: dev.wolveringer.client.BungeePlugin
+version: 1.8
+author: KingIngo

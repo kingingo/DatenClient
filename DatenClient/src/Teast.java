@@ -15,7 +15,9 @@ import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.gamestats.Statistic;
 import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus.GameState;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
 
@@ -204,7 +206,7 @@ class TClient {
 	String name;
 	public TClient(String name,GameType game) {
 		this.name = name;
-		client = Client.createServerClient(ClientType.ACARDE,name, new InetSocketAddress("localhost", 1111), new ServerActionListener() {
+		client = Client.createBungeecordClient(name, new InetSocketAddress("localhost", 1111), new BungeeCordActionListener() {
 			@Override
 			public void sendMessage(UUID player, String message) {
 				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
@@ -220,7 +222,6 @@ class TClient {
 				System.out.println("["+name+"] Brotcast: "+message+" Permission: "+permission);
 			}
 			
-			@Override
 			public void setGamemode(GameType game) {
 				System.out.println("Set gamemode");
 				System.out.println("Reconnecting");
@@ -242,51 +243,35 @@ class TClient {
 				if(channel.equalsIgnoreCase("log"))
 					System.out.println("message: "+buffer.readString());
 			}
+
+			@Override
+			public void settingUpdate(UUID player, Setting setting, String value) {
+				
+			}
+
+			@Override
+			public void sendPlayer(UUID player, String server) {
+				
+			}
 			
 		},new ServerInformations() {
-			
 			@Override
-			public boolean isVisiable() {
-				return false;
-			}
-			
-			@Override
-			public GameType getType() {
-				return game;
-			}
-			
-			@Override
-			public int getPlayers() {
-				return 0;
-			}
-			
-			@Override
-			public int getMaxPlayers() {
-				return 1;
-			}
-			
-			@Override
-			public String getMOTS() {
-				return "Client["+name+"]";
-			}
-			
-			@Override
-			public String getServerId() {
-				return null;
-			}
-			@Override
-			public GameState getServerState() {
-				return GameState.LobbyPhase;
+			public PacketOutServerStatus getStatus() {
+				return new PacketOutServerStatus(0x00, -1, -2, "", GameType.NONE,GameState.NONE,false,"bungee000");
 			}
 		});
 	}
 	
 	public void start(){
-		client.connect("HelloWorld".getBytes());
+		try {
+			client.connect("HelloWorld".getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		System.out.println(">> Connected");
 		DataBuffer buffer = new DataBuffer();
 		buffer.writeString("Hello world from "+name);
-		new ClientWrapper(client).sendServerMessage(ClientType.ACARDE, "log", buffer);
+		new ClientWrapper(client).brotcastMessage(null, "Hello world");
 	}
 	public static void testBan(LoadedPlayer player){
 		System.out.println("banned: "+ player.getBanStats(null).getSync());

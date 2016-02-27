@@ -49,7 +49,7 @@ public class DataBuffer extends ByteBuf {
 
 	public DataBuffer writeString(String s) {
 		if (s != null) {
-			writeInt(s.length());
+			writeInt(s.getBytes().length);
 			writeBytes(s.getBytes());
 		} else
 			writeInt(-1);
