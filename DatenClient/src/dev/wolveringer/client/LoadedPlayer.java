@@ -1,6 +1,11 @@
 package dev.wolveringer.client;
 
+import java.util.Arrays;
 import java.util.UUID;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 
 import dev.wolveringer.client.futures.BanStatsResponseFuture;
 import dev.wolveringer.client.futures.PacketResponseFuture;
@@ -187,7 +192,17 @@ public class LoadedPlayer {
 		return f;
 	}
 	public StatusResponseFuture setStats(EditStats... changes){
-		return handle.writePacket(new PacketOutStatsEdit(getUUID(), changes));
+		Iterable<EditStats> statis = Iterables.filter(Arrays.asList(changes),new Predicate<EditStats>() {
+		    @Override
+		    public boolean apply(EditStats arg0) {
+		        if(arg0==null)
+		            return false;
+		        if(arg0.getAction() == null || arg0.getGame() == null || arg0.getKey() == null || arg0.getValue() == null)
+		            return false;
+		        return true;
+		    }
+		});
+		return handle.writePacket(new PacketOutStatsEdit(getUUID(), FluentIterable.from(statis).toArray(EditStats.class)));
 	}
 	public BanStatsResponseFuture getBanStats(String ip){
 		PacketOutBanStatsRequest p = new PacketOutBanStatsRequest(getUUID(),ip, name);
