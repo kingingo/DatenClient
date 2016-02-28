@@ -5,6 +5,7 @@ import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 public class PacketOutLobbyServerRequest extends Packet{
 	@AllArgsConstructor

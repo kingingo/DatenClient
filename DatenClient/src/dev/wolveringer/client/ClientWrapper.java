@@ -6,16 +6,20 @@ import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
+import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
+import dev.wolveringer.dataclient.gamestats.GameType;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataclient.protocoll.packets.PacketForward;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutLobbyServerRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.TargetType;
 import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutLobbyServerRequest.GameRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutNameRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatusRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutUUIDRequest;
@@ -142,5 +146,10 @@ public class ClientWrapper {
 	protected void changeUUID(LoadedPlayer player,UUID oldUUID,UUID newUUID){
 		uuidPlayers.remove(oldUUID);
 		uuidPlayers.put(newUUID, player);
+	}
+	public LobbyServerResponseFuture getLobbies(GameRequest...games){
+		PacketOutLobbyServerRequest q = new PacketOutLobbyServerRequest(games);
+		handle.writePacket(q);
+		return new LobbyServerResponseFuture(handle, q);
 	}
 }
