@@ -55,7 +55,7 @@ public class Client {
 	
 	protected ServerStatusSender infoSender;
 	
-	Client(InetSocketAddress target,ClientType type,String clientName) {
+	private Client(InetSocketAddress target,ClientType type,String clientName) {
 		this.target = target;
 		this.type = type;
 		this.name = clientName;
