@@ -10,8 +10,10 @@ import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
+import dev.wolveringer.client.futures.TopTenResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
 import dev.wolveringer.dataclient.gamestats.GameType;
+import dev.wolveringer.dataclient.gamestats.StatsKey;
 import dev.wolveringer.dataclient.protocoll.DataBuffer;
 import dev.wolveringer.dataclient.protocoll.packets.Packet;
 import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
@@ -22,6 +24,7 @@ import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutLobbyServerRequest.GameRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutNameRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatusRequest;
+import dev.wolveringer.dataclient.protocoll.packets.PacketOutTopTenRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketOutUUIDRequest;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
@@ -151,5 +154,10 @@ public class ClientWrapper {
 		PacketOutLobbyServerRequest q = new PacketOutLobbyServerRequest(games);
 		handle.writePacket(q);
 		return new LobbyServerResponseFuture(handle, q);
+	}
+	public TopTenResponseFuture getTopTen(GameType game,StatsKey condition){
+		PacketOutTopTenRequest r = new PacketOutTopTenRequest(game, condition);
+		handle.writePacket(r);
+		return new TopTenResponseFuture(handle, r);
 	}
 }

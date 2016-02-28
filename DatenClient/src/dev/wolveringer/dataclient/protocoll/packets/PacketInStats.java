@@ -42,6 +42,5 @@ public class PacketInStats extends Packet{
 			}
 			stats[i] = new Statistic(key, val);
 		}
-		
 	}
 }
