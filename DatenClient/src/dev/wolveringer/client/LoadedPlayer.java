@@ -136,7 +136,7 @@ public class LoadedPlayer {
 	
 	public LanguageType getLanguageSync(){
 		SettingValue[] response = getSettings(Setting.LANGUAGE).getSyncSave();
-		if (response.length == 1 && response[0].getSetting() == Setting.LANGUAGE)
+		if (response != null && response.length == 1 && response[0].getSetting() == Setting.LANGUAGE)
 			return LanguageType.get(response[0].getValue());
 		return LanguageType.ENGLISH;
 	}

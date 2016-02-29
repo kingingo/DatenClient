@@ -25,6 +25,10 @@ public class PermissionPlayer {
 		//
 		this.manager = manager;
 		this.uuid = uuid;
+		loadPermissions();
+	}
+	
+	private void loadPermissions(){
 		System.out.println("Requesting player Permissions");
 		DataBuffer buffer = manager.handler.sendMessage(player, new DataBuffer().writeByte(0).writeUUID(uuid)).getSync(); //Action: 0 (Get-Perms)
 		if(buffer == null){
@@ -55,6 +59,10 @@ public class PermissionPlayer {
 			groups.add(g);
 		}
 		System.out.println("Player geldaden");
+	}
+	
+	public void reloadPermissions(){
+		loadPermissions();
 	}
 	
 	public void addPermission(String permission){

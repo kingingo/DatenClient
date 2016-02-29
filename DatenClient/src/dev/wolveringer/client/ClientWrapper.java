@@ -73,6 +73,8 @@ public class ClientWrapper {
 			player.load();
 		if(!players.containsKey(player.getName()))
 			players.put(player.getName(), player);
+		if(!uuidPlayers.containsKey(player.getUUID()))
+			uuidPlayers.put(player.getUUID(), player);
 		return player;
 	}
 	public LoadedPlayer getPlayerAndLoad(UUID name){
@@ -81,6 +83,8 @@ public class ClientWrapper {
 			player.load();
 		if(!uuidPlayers.containsKey(player.getUUID()))
 			uuidPlayers.put(player.getUUID(), player);
+		if(!players.containsKey(player.getName()))
+			players.put(player.getName(), player);
 		return player;
 	}
 	
