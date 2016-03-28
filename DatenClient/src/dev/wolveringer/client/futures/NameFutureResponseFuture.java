@@ -4,10 +4,9 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInNameResponse;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutNameResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
 
 public class NameFutureResponseFuture extends PacketResponseFuture<UUIDKey[]>{
 	private UUID[] uuids;
@@ -19,8 +18,8 @@ public class NameFutureResponseFuture extends PacketResponseFuture<UUIDKey[]>{
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInNameResponse && Arrays.equals(((PacketInNameResponse) packet).getUUIDs(), uuids)){
-			done(((PacketInNameResponse)packet).getResponse());
+		if(packet instanceof PacketOutNameResponse && Arrays.equals(((PacketOutNameResponse) packet).getUUIDs(), uuids)){
+			done(((PacketOutNameResponse)packet).getResponse());
 		}
 	}
 }

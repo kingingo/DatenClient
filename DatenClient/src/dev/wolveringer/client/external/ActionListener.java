@@ -2,8 +2,8 @@ package dev.wolveringer.client.external;
 
 import java.util.UUID;
 
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
+import dev.wolveringer.dataserver.player.Setting;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
 
 public interface ActionListener {
 	public void sendMessage(UUID player,String message);

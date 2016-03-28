@@ -3,11 +3,10 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus.Error;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 
-public class StatusResponseFuture extends PacketResponseFuture<Error[]>{
+public class StatusResponseFuture extends PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]>{
 	private UUID packet;
 	
 	public StatusResponseFuture(Client client,UUID packet) {
@@ -17,8 +16,8 @@ public class StatusResponseFuture extends PacketResponseFuture<Error[]>{
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInPacketStatus && ((PacketInPacketStatus) packet).getPacketId().equals(this.packet)){
-			done(((PacketInPacketStatus) packet).getErrors());
+		if(packet instanceof PacketOutPacketStatus && ((PacketOutPacketStatus) packet).getPacketId().equals(this.packet)){
+			done(((PacketOutPacketStatus) packet).getErrors());
 		}
 	}
 }

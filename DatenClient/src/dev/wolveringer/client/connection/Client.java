@@ -7,9 +7,9 @@ import java.net.Socket;
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutHandschakeStart;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
+import dev.wolveringer.dataserver.protocoll.packets.PacketHandschakeInStart;
 import lombok.Getter;
 
 public class Client {
@@ -71,7 +71,7 @@ public class Client {
 		this.boss = new PacketHandlerBoss(this);
 		this.reader.start();
 		//Handschaking
-		writePacket(new PacketOutHandschakeStart(host, name, password, type));
+		writePacket(new PacketHandschakeInStart(host, name, password, type));
 		
 		long start = System.currentTimeMillis();
 		while (!boss.handschakeComplete) {

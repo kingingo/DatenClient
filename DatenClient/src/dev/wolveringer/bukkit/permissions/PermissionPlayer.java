@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import lombok.Getter;
 
 //WolverinDEV=57091d6f-839f-48b7-a4b1-4474222d4ad1

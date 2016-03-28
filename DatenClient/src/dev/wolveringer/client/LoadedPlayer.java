@@ -13,26 +13,25 @@ import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
-import dev.wolveringer.dataclient.gamestats.GameType;
-import dev.wolveringer.dataclient.gamestats.Statistic;
-import dev.wolveringer.dataclient.gamestats.StatsKey;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus.Error;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanPlayer;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanStatsRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutConnectionStatus.Status;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.EditStats;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutGetServer;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutPlayerSettingsRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerSwitch;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
+import dev.wolveringer.dataserver.gamestats.GameType;
+import dev.wolveringer.dataserver.gamestats.StatsKey;
+import dev.wolveringer.dataserver.player.Setting;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInBanPlayer;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInBanStatsRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInChangePlayerSettings;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInConnectionStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInConnectionStatus.Status;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInGetServer;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInPlayerSettingsRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerSwitch;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit.Action;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit.EditStats;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.gamestats.Statistic;
 
 public class LoadedPlayer {
 
@@ -77,7 +76,7 @@ public class LoadedPlayer {
 	public void load() { //TODO check
 		if(loaded)
 			return;
-		handle.writePacket(new PacketOutConnectionStatus(name, Status.CONNECTED)).getSync(); //Load player
+		handle.writePacket(new PacketInConnectionStatus(name, Status.CONNECTED)).getSync(); //Load player
 		loaded = true;
 		loadUUID();
 	}
@@ -90,13 +89,13 @@ public class LoadedPlayer {
 		if(!loaded)
 			return;
 		loaded = false;
-		handle.writePacket(new PacketOutConnectionStatus(name, Status.DISCONNECTED)).getSync(); //Unload player
+		handle.writePacket(new PacketInConnectionStatus(name, Status.DISCONNECTED)).getSync(); //Unload player
 	}
 
 	public StatsResponseFuture getStats(GameType game) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutStatsRequest(getUUID(), game);
+		Packet packet = new PacketInStatsRequest(getUUID(), game);
 		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), game);
 		handle.handle.writePacket(packet);
 		return future;
@@ -105,7 +104,7 @@ public class LoadedPlayer {
 	public int getCoinsSync() {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutStatsRequest(getUUID(), GameType.Money);
+		Packet packet = new PacketInStatsRequest(getUUID(), GameType.Money);
 		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
 		for(Statistic s : future.getSync())
@@ -114,14 +113,14 @@ public class LoadedPlayer {
 		return -1;
 	}
 	
-	public PacketResponseFuture<Error[]> changeCoins(Action action,int coins){
+	public PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]> changeCoins(Action action,int coins){
 		return setStats(new EditStats(GameType.Money, action, StatsKey.COINS, coins));
 	}
 
 	public int getGemsSync() {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutStatsRequest(getUUID(), GameType.Money);
+		Packet packet = new PacketInStatsRequest(getUUID(), GameType.Money);
 		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
 		for(Statistic s : future.getSync())
@@ -130,7 +129,7 @@ public class LoadedPlayer {
 		return -1;
 	}
 
-	public PacketResponseFuture<Error[]> changeGems(Action action,int coins){
+	public PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]> changeGems(Action action,int coins){
 		return setStats(new EditStats(GameType.Money, action, StatsKey.GEMS, coins));
 	}
 	
@@ -144,7 +143,7 @@ public class LoadedPlayer {
 	public SettingsResponseFuture getSettings(Setting... settings) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		Packet packet = new PacketOutPlayerSettingsRequest(getUUID(), settings);
+		Packet packet = new PacketInPlayerSettingsRequest(getUUID(), settings);
 		SettingsResponseFuture future = new SettingsResponseFuture(handle.handle, packet, getUUID());
 		handle.handle.writePacket(packet);
 		return future;
@@ -160,7 +159,7 @@ public class LoadedPlayer {
 	public void setPasswordSync(String password) {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
-		PacketOutChangePlayerSettings packet = new PacketOutChangePlayerSettings(getUUID(), Setting.PASSWORD, password);
+		PacketInChangePlayerSettings packet = new PacketInChangePlayerSettings(getUUID(), Setting.PASSWORD, password);
 		handle.writePacket(packet).getSync();
 	}
 
@@ -175,26 +174,26 @@ public class LoadedPlayer {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		UUID old = getUUID();
-		PacketOutChangePlayerSettings packet = new PacketOutChangePlayerSettings(old, Setting.PREMIUM_LOGIN, active + "");
+		PacketInChangePlayerSettings packet = new PacketInChangePlayerSettings(old, Setting.PREMIUM_LOGIN, active + "");
 		handle.writePacket(packet).getSync();
 		loadUUID();
 		handle.changeUUID(this, old, getUUID());
 	}
 
 	public void setServerSync(String server) {
-		handle.writePacket(new PacketOutServerSwitch(getUUID(), server)).getSync();
+		handle.writePacket(new PacketInServerSwitch(getUUID(), server)).getSync();
 	}
 
 	public ServerResponseFurure getServer() {
-		PacketOutGetServer p = new PacketOutGetServer(getUUID());
+		PacketInGetServer p = new PacketInGetServer(getUUID());
 		ServerResponseFurure f = new ServerResponseFurure(handle.handle, p, uuid);
 		handle.handle.writePacket(p);
 		return f;
 	}
 	public StatusResponseFuture setStats(EditStats... changes){
-		Iterable<EditStats> statis = Iterables.filter(Arrays.asList(changes),new Predicate<EditStats>() {
+		Iterable<PacketInStatsEdit.EditStats> statis = Iterables.filter(Arrays.asList(changes),new Predicate<PacketInStatsEdit.EditStats>() {
 		    @Override
-		    public boolean apply(EditStats arg0) {
+		    public boolean apply(PacketInStatsEdit.EditStats arg0) {
 		        if(arg0==null)
 		            return false;
 		        if(arg0.getAction() == null || arg0.getGame() == null || arg0.getKey() == null || arg0.getValue() == null)
@@ -202,16 +201,16 @@ public class LoadedPlayer {
 		        return true;
 		    }
 		});
-		return handle.writePacket(new PacketOutStatsEdit(getUUID(), FluentIterable.from(statis).toArray(EditStats.class)));
+		return handle.writePacket(new PacketInStatsEdit(getUUID(), FluentIterable.from(statis).toArray(EditStats.class)));
 	}
 	public BanStatsResponseFuture getBanStats(String ip){
-		PacketOutBanStatsRequest p = new PacketOutBanStatsRequest(getUUID(),ip, name);
+		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(),ip, name);
 		BanStatsResponseFuture f = new BanStatsResponseFuture(handle.handle, p);
 		handle.handle.writePacket(p);
 		return f;
 	}
 	public StatusResponseFuture banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
-		return handle.writePacket(new PacketOutBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
+		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
 	}
 	public StatusResponseFuture kickPlayer(String reson){
 		return handle.kickPlayer(getUUID(), reson);

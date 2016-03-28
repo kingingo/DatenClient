@@ -3,8 +3,8 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerServer;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerServer;
 
 public class ServerResponseFurure extends PacketResponseFuture<String>{
 	private UUID player;
@@ -16,7 +16,7 @@ public class ServerResponseFurure extends PacketResponseFuture<String>{
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInPlayerServer && ((PacketInPlayerServer) packet).getPlayer().equals(player))
-			done(((PacketInPlayerServer) packet).getServer());
+		if(packet instanceof PacketOutPlayerServer && ((PacketOutPlayerServer) packet).getPlayer().equals(player))
+			done(((PacketOutPlayerServer) packet).getServer());
 	}
 }

@@ -1,25 +1,22 @@
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-import javax.print.attribute.standard.MediaSize.NA;
-
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.connection.ServerInformations;
 import dev.wolveringer.client.external.BungeeCordActionListener;
-import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.dataclient.gamestats.GameType;
-import dev.wolveringer.dataclient.gamestats.Statistic;
-import dev.wolveringer.dataclient.gamestats.StatsKey;
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutChangePlayerSettings.Setting;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus.GameState;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutStatsEdit.Action;
+import dev.wolveringer.dataserver.gamestats.GameType;
+import dev.wolveringer.dataserver.gamestats.StatsKey;
+import dev.wolveringer.dataserver.player.Setting;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus.GameState;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit.Action;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus;
+import dev.wolveringer.gamestats.Statistic;
 
 public class Teast {
 	public static void main(String[] args) {
@@ -160,7 +157,7 @@ public class Teast {
 	}
 	
 	private static void testStatsEdit(LoadedPlayer player){
-		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
+		player.setStats(new PacketInStatsEdit.EditStats[]{new PacketInStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
 	}
 	
 	private static void testGetRequestStats(LoadedPlayer player){
@@ -256,8 +253,8 @@ class TClient {
 			
 		},new ServerInformations() {
 			@Override
-			public PacketOutServerStatus getStatus() {
-				return new PacketOutServerStatus(0x00, -1, -2, "", GameType.NONE,GameState.NONE,false,"bungee000");
+			public PacketInServerStatus getStatus() {
+				return new PacketInServerStatus(0x00, -1, -2, "", GameType.NONE,GameState.NONE,"NONE",false,"bungee000");
 			}
 		});
 	}
@@ -282,7 +279,7 @@ class TClient {
 	}
 	
 	private static void testStatsEdit(LoadedPlayer player){
-		player.setStats(new PacketOutStatsEdit.EditStats[]{new PacketOutStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
+		player.setStats(new PacketInStatsEdit.EditStats[]{new PacketInStatsEdit.EditStats(GameType.SheepWars, Action.REMOVE, StatsKey.KILLS, 10)}).getSync();
 	}
 	
 	private static void testGetRequestStats(LoadedPlayer player){

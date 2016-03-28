@@ -1,21 +1,21 @@
 package dev.wolveringer.client.futures;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInTopTen;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutTopTenRequest;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutTopTen;
 
-public class TopTenResponseFuture extends PacketResponseFuture<PacketInTopTen>{
-	private PacketOutTopTenRequest packet;
+public class TopTenResponseFuture extends PacketResponseFuture<PacketOutTopTen>{
+	private PacketInTopTenRequest packet;
 	
-	public TopTenResponseFuture(Client handle,PacketOutTopTenRequest packet) {
+	public TopTenResponseFuture(Client handle,PacketInTopTenRequest packet) {
 		super(handle, packet);
 		this.packet = packet;
 	}
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInTopTen && ((PacketInTopTen) packet).getCondition() == this.packet.getCondition() && ((PacketInTopTen) packet).getGame() == this.packet.getGame())
-			done((PacketInTopTen) packet);
+		if(packet instanceof PacketOutTopTen && ((PacketOutTopTen) packet).getCondition() == this.packet.getCondition() && ((PacketOutTopTen) packet).getGame() == this.packet.getGame())
+			done((PacketOutTopTen) packet);
 	}
 }

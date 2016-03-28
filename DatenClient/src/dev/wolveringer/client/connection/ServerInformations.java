@@ -1,9 +1,7 @@
 package dev.wolveringer.client.connection;
 
-import dev.wolveringer.dataclient.gamestats.GameType;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatus.GameState;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
 
 public interface ServerInformations {
-	public PacketOutServerStatus getStatus();
+	public PacketInServerStatus getStatus();
 }

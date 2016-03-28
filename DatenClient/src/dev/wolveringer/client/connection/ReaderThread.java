@@ -5,8 +5,9 @@ import java.io.InputStream;
 
 import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.client.threadfactory.ThreadRunner;
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.Packet.PacketDirection;
 
 public class ReaderThread {
 	private Client client;
@@ -58,7 +59,7 @@ public class ReaderThread {
 		byte[] bbuffer = new byte[length];
 		in.read(bbuffer);
 		DataBuffer buffer = new DataBuffer(bbuffer);
-		Packet packet = Packet.createPacket(buffer.readInt(), buffer);
+		Packet packet = Packet.createPacket(buffer.readInt(), buffer,PacketDirection.TO_CLIENT);
 		client.getHandlerBoss().handle(packet);
 	}
 

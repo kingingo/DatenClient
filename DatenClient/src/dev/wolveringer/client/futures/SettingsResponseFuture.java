@@ -3,9 +3,9 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
 
 public class SettingsResponseFuture extends PacketResponseFuture<SettingValue[]>{
 	private UUID player;
@@ -16,7 +16,7 @@ public class SettingsResponseFuture extends PacketResponseFuture<SettingValue[]>
 	}
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInPlayerSettings && ((PacketInPlayerSettings) packet).getPlayer().equals(player))
-			done(((PacketInPlayerSettings) packet).getValues());
+		if(packet instanceof PacketOutPlayerSettings && ((PacketOutPlayerSettings) packet).getPlayer().equals(player))
+			done(((PacketOutPlayerSettings) packet).getValues());
 	}
 }

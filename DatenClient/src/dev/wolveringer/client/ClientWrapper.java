@@ -12,23 +12,23 @@ import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.client.futures.TopTenResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
-import dev.wolveringer.dataclient.gamestats.GameType;
-import dev.wolveringer.dataclient.gamestats.StatsKey;
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
-import dev.wolveringer.dataclient.protocoll.packets.PacketForward;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutLobbyServerRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.TargetType;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutLobbyServerRequest.GameRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutNameRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatusRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutTopTenRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutUUIDRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
-import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInServerStatus.Action;
+import dev.wolveringer.dataserver.gamestats.GameType;
+import dev.wolveringer.dataserver.gamestats.StatsKey;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
+import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType;
+import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest.GameRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInNameRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInUUIDRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.Action;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 
 public class ClientWrapper {
 	protected Client handle;
@@ -40,7 +40,7 @@ public class ClientWrapper {
 	}
 	
 	public UUIDFuture getUUID(String...players){
-		Packet packet = new PacketOutUUIDRequest(players);
+		Packet packet = new PacketInUUIDRequest(players);
 		UUIDFuture future = new UUIDFuture(handle, packet, players);
 		handle.writePacket(packet);
 		return future;
@@ -100,7 +100,7 @@ public class ClientWrapper {
 	}
 	
 	private String getName(UUID uuid){
-		PacketOutNameRequest r = new PacketOutNameRequest(new UUID[]{uuid});
+		PacketInNameRequest r = new PacketInNameRequest(new UUID[]{uuid});
 		NameFutureResponseFuture f = new NameFutureResponseFuture(handle, r, new UUID[]{uuid});
 		handle.writePacket(r);
 		UUIDKey[] key = f.getSync();
@@ -108,12 +108,12 @@ public class ClientWrapper {
 			return key[0].getName();
 		return null;
 	}
-	public ServerStatusResponseFuture getServerStatus(Action action,String server){
+	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action,String server){
 		return getServerStatus(action, server, false);
 	}
-	public ServerStatusResponseFuture getServerStatus(Action action,String server,boolean player){
-		PacketOutServerStatusRequest p;
-		writePacket(p=new PacketOutServerStatusRequest(action, server, player));
+	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action,String server,boolean player){
+		PacketInServerStatusRequest p;
+		writePacket(p=new PacketInServerStatusRequest(action, server, player));
 		return new ServerStatusResponseFuture(handle, p);
 	}
 	public StatusResponseFuture sendMessage(UUID player,String message){
@@ -125,7 +125,7 @@ public class ClientWrapper {
 		return writePacket(p);
 	}
 	public StatusResponseFuture kickPlayer(UUID player,String reson){
-		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[]{new PacketServerAction.PlayerAction(player, dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.Action.KICK, reson)});
+		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[]{new PacketServerAction.PlayerAction(player, PacketServerAction.Action.KICK, reson)});
 		return writePacket(action);
 	}
 	public StatusResponseFuture sendServerMessage(String target,String channel,DataBuffer buffer){
@@ -155,12 +155,12 @@ public class ClientWrapper {
 		uuidPlayers.put(newUUID, player);
 	}
 	public LobbyServerResponseFuture getLobbies(GameRequest...games){
-		PacketOutLobbyServerRequest q = new PacketOutLobbyServerRequest(games);
+		PacketInLobbyServerRequest q = new PacketInLobbyServerRequest(games);
 		handle.writePacket(q);
 		return new LobbyServerResponseFuture(handle, q);
 	}
 	public TopTenResponseFuture getTopTen(GameType game,StatsKey condition){
-		PacketOutTopTenRequest r = new PacketOutTopTenRequest(game, condition);
+		PacketInTopTenRequest r = new PacketInTopTenRequest(game, condition);
 		handle.writePacket(r);
 		return new TopTenResponseFuture(handle, r);
 	}

@@ -1,22 +1,22 @@
 package dev.wolveringer.client.futures;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInServerStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutServerStatusRequest;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus;
 
-public class ServerStatusResponseFuture extends PacketResponseFuture<PacketInServerStatus>{
-	private PacketOutServerStatusRequest r;
+public class ServerStatusResponseFuture extends PacketResponseFuture<PacketOutServerStatus>{
+	private PacketInServerStatusRequest r;
 	
-	public ServerStatusResponseFuture(Client c,PacketOutServerStatusRequest r) {
+	public ServerStatusResponseFuture(Client c,PacketInServerStatusRequest r) {
 		super(c,r);
 		this.r = r;
 	}
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInServerStatus && ((PacketInServerStatus) packet).getAction() == r.getAction() && ((PacketInServerStatus) packet).getValue() == r.getValue()){
-			done((PacketInServerStatus) packet);
+		if(packet instanceof PacketOutServerStatus && ((PacketOutServerStatus) packet).getAction() == r.getAction() && ((PacketOutServerStatus) packet).getValue() == r.getValue()){
+			done((PacketOutServerStatus) packet);
 		}
 	}
 }

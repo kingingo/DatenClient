@@ -6,8 +6,8 @@ import dev.wolveringer.client.PacketHandleErrorException;
 import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.PacketListener;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 
 public abstract class PacketResponseFuture<T> extends ProgressFuture<T> implements PacketListener{
 	private Client client;
@@ -28,8 +28,8 @@ public abstract class PacketResponseFuture<T> extends ProgressFuture<T> implemen
 	
 	@Override
 	public void handle(Packet packet) {
-		if(packet instanceof PacketInPacketStatus && ((PacketInPacketStatus) packet).getPacketId().equals(this.handle)){
-			done(new PacketHandleErrorException((PacketInPacketStatus) packet));
+		if(packet instanceof PacketOutPacketStatus && ((PacketOutPacketStatus) packet).getPacketId().equals(this.handle)){
+			done(new PacketHandleErrorException((PacketOutPacketStatus) packet));
 		}
 		else
 			handlePacket(packet);

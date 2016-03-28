@@ -3,10 +3,10 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.gamestats.GameType;
-import dev.wolveringer.dataclient.gamestats.Statistic;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInStats;
+import dev.wolveringer.dataserver.gamestats.GameType;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutStats;
+import dev.wolveringer.gamestats.Statistic;
 
 public class StatsResponseFuture extends PacketResponseFuture<Statistic[]>{
 	private UUID player;
@@ -20,7 +20,7 @@ public class StatsResponseFuture extends PacketResponseFuture<Statistic[]>{
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInStats && ((PacketInStats) packet).getPlayer().equals(player) && ((PacketInStats) packet).getGame().ordinal() == game.ordinal())
-			done(((PacketInStats) packet).getStats());
+		if(packet instanceof PacketOutStats && ((PacketOutStats) packet).getPlayer().equals(player) && ((PacketOutStats) packet).getGame().ordinal() == game.ordinal())
+			done(((PacketOutStats) packet).getStats());
 	}
 }

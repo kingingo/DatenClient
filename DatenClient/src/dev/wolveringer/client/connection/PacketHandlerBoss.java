@@ -4,28 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister.Pack;
-
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
-import dev.wolveringer.dataclient.protocoll.DataBuffer;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage;
-import dev.wolveringer.dataclient.protocoll.packets.PacketChatMessage.Target;
-import dev.wolveringer.dataclient.protocoll.packets.PacketDisconnect;
-import dev.wolveringer.dataclient.protocoll.packets.PacketForward;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInGammodeChange;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInHandschakeAccept;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPacketStatus;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse;
-import dev.wolveringer.dataclient.protocoll.packets.PacketPingPong;
-import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInPlayerSettings.SettingValue;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInUUIDResponse.UUIDKey;
-import dev.wolveringer.dataclient.protocoll.packets.PacketServerAction.PlayerAction;
-import dev.wolveringer.dataclient.protocoll.packets.PacketServerMessage;
-import dev.wolveringer.dataclient.protocoll.packets.PacketSettingUpdate;
+import dev.wolveringer.dataserver.protocoll.DataBuffer;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
+import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.Target;
+import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
+import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutGammodeChange;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutHandschakeAccept;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.PlayerAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSettingUpdate;
 
 public class PacketHandlerBoss {
 	private List<PacketListener> listener = new ArrayList<>();
@@ -47,7 +45,7 @@ public class PacketHandlerBoss {
 	}
 	
 	protected void handle(Packet packet) {
-		if(packet instanceof PacketInHandschakeAccept){
+		if(packet instanceof PacketOutHandschakeAccept){
 			handschakeComplete = true;
 			System.out.println("Connected to Server");
 			//owner.writePacket(new PacketOutConnectionStatus("WolverinDEV", Status.CONNECTED));
@@ -62,16 +60,16 @@ public class PacketHandlerBoss {
 			//owner.writePacket(new PacketOutPlayerSettingsRequest(wolverindev, new Setting[]{Setting.PREMIUM_LOGIN,Setting.UUID}));
 			*/
 		}
-		else if(packet instanceof PacketInPacketStatus){
-			if(((PacketInPacketStatus)packet).getErrors().length == 0){
+		else if(packet instanceof PacketOutPacketStatus){
+			if(((PacketOutPacketStatus)packet).getErrors().length == 0){
 				if(debug)
-					System.out.println("Packet sucessfull handled ("+((PacketInPacketStatus)packet).getPacketId()+")");
+					System.out.println("Packet sucessfull handled ("+((PacketOutPacketStatus)packet).getPacketId()+")");
 			}
 			else
 			{
 				if(debug){
 					System.out.println("Error Packet ("+packet.getPacketUUID()+") -> Errors:");
-					for(PacketInPacketStatus.Error r : ((PacketInPacketStatus)packet).getErrors())
+					for(PacketOutPacketStatus.Error r : ((PacketOutPacketStatus)packet).getErrors())
 						System.out.println(" - "+r.getMessage());
 				}
 			}
@@ -82,17 +80,17 @@ public class PacketHandlerBoss {
 				System.out.println("Disconnected: "+((PacketDisconnect)packet).getReson());
 			owner.closePipeline();
 		}
-		else if(packet instanceof PacketInPlayerSettings){
+		else if(packet instanceof PacketOutPlayerSettings){
 			if(debug){
-				System.out.println("Player settings for: "+((PacketInPlayerSettings)packet).getPlayer());
-				for(SettingValue s : ((PacketInPlayerSettings) packet).getValues())
+				System.out.println("Player settings for: "+((PacketOutPlayerSettings)packet).getPlayer());
+				for(SettingValue s : ((PacketOutPlayerSettings) packet).getValues())
 					System.out.println("   "+s.getSetting()+" -> "+s.getValue());
 			}
 		}
-		else if(packet instanceof PacketInUUIDResponse){
+		else if(packet instanceof PacketOutUUIDResponse){
 			if(debug){
 				System.out.println("UUID response");
-				for(UUIDKey k : ((PacketInUUIDResponse)packet).getUuids())
+				for(UUIDKey k : ((PacketOutUUIDResponse)packet).getUuids())
 					System.out.println(k.getName()+" - "+k.getUuid());
 			}
 		}
@@ -117,11 +115,11 @@ public class PacketHandlerBoss {
 				}
 			}
 		}
-		else if(packet instanceof PacketInGammodeChange){
+		else if(packet instanceof PacketOutGammodeChange){
 			if(!(owner.getExternalHandler() instanceof ServerActionListener))
 				System.out.println("Gammodechange not supported");
 			else{
-				((ServerActionListener)owner.getExternalHandler()).setGamemode(((PacketInGammodeChange) packet).getGame());
+				((ServerActionListener)owner.getExternalHandler()).setGamemode(((PacketOutGammodeChange) packet).getGame());
 			}
 		}
 		else if(packet instanceof PacketChatMessage){

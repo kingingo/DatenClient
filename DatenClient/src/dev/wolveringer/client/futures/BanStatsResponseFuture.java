@@ -3,23 +3,23 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
-import dev.wolveringer.dataclient.protocoll.packets.Packet;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInBanStats;
-import dev.wolveringer.dataclient.protocoll.packets.PacketOutBanStatsRequest;
-import dev.wolveringer.dataclient.protocoll.packets.PacketInBanStats.BanEntity;
+import dev.wolveringer.dataserver.ban.BanEntity;
+import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInBanStatsRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutBanStats;
 
 public class BanStatsResponseFuture extends PacketResponseFuture<BanEntity> {
 	private UUID packet;
 	
-	public BanStatsResponseFuture(Client client,PacketOutBanStatsRequest packet) {
+	public BanStatsResponseFuture(Client client,PacketInBanStatsRequest packet) {
 		super(client,packet);
 		this.packet = packet.getPacketUUID();
 	}
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketInBanStats && ((PacketInBanStats) packet).getRequest().equals(this.packet)){
-			done(((PacketInBanStats) packet).getE());
+		if(packet instanceof PacketOutBanStats && ((PacketOutBanStats) packet).getRequest().equals(this.packet)){
+			done(((PacketOutBanStats) packet).getE());
 		}
 	}
 }

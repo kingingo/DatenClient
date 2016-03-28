@@ -2,7 +2,7 @@ package dev.wolveringer.client.connection;
 
 import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.client.threadfactory.ThreadRunner;
-import dev.wolveringer.dataclient.protocoll.packets.PacketPingPong;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
 
 public class TimeOutThread {
 	ThreadRunner runner;
