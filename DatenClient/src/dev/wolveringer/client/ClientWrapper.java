@@ -27,7 +27,6 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInUUIDRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
-import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.Action;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 
 public class ClientWrapper {

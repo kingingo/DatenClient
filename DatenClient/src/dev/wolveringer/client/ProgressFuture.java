@@ -43,8 +43,8 @@ public abstract class ProgressFuture<T> {
 				e.printStackTrace();
 			}
 			if (start + timeout < System.currentTimeMillis()) {
-				//throw new RuntimeException("Timeout");
-				return null;
+				throw new RuntimeException("Timeout");
+				//return null;
 			}
 		}
 		return response;
