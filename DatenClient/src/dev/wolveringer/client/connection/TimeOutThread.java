@@ -7,7 +7,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
 public class TimeOutThread {
 	ThreadRunner runner;
 	Client owner;
-	long maxTime = 20000;
+	long maxTime = 7500;
 	boolean active = false;
 	public TimeOutThread(Client cleint) {
 		this.owner = cleint;
@@ -20,7 +20,7 @@ public class TimeOutThread {
 			public void run() {
 				while (owner.socket.isConnected() && active) {
 					try {
-						Thread.sleep(5000);
+						Thread.sleep(4000);
 					} catch (InterruptedException e) {
 					}
 					try{

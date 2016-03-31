@@ -47,6 +47,7 @@ public class PacketHandlerBoss {
 	protected void handle(Packet packet) {
 		if(packet instanceof PacketOutHandschakeAccept){
 			handschakeComplete = true;
+			owner.getExternalHandler().connected();
 			System.out.println("Connected to Server");
 			//owner.writePacket(new PacketOutConnectionStatus("WolverinDEV", Status.CONNECTED));
 			/*
@@ -119,7 +120,7 @@ public class PacketHandlerBoss {
 			if(!(owner.getExternalHandler() instanceof ServerActionListener))
 				System.out.println("Gammodechange not supported");
 			else{
-				((ServerActionListener)owner.getExternalHandler()).setGamemode(((PacketOutGammodeChange) packet).getGame());
+				((ServerActionListener)owner.getExternalHandler()).setGamemode(((PacketOutGammodeChange) packet).getGame(),((PacketOutGammodeChange) packet).getSubType());
 			}
 		}
 		else if(packet instanceof PacketChatMessage){

@@ -15,7 +15,10 @@ public class TopTenResponseFuture extends PacketResponseFuture<PacketOutTopTen>{
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketOutTopTen && ((PacketOutTopTen) packet).getCondition() == this.packet.getCondition() && ((PacketOutTopTen) packet).getGame() == this.packet.getGame())
-			done((PacketOutTopTen) packet);
+		if(packet instanceof PacketOutTopTen){
+			if(((PacketOutTopTen) packet).getCondition() == this.packet.getCondition() && ((PacketOutTopTen) packet).getGame() == this.packet.getGame()){
+				done((PacketOutTopTen) packet);
+			}
+		}
 	}
 }
