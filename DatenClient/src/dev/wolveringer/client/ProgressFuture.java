@@ -17,7 +17,7 @@ public abstract class ProgressFuture<T> {
 	}
 
 	public boolean haveResponse() {
-		return haveResponse();
+		return response != null;
 	}
 
 	public T getSync() {
