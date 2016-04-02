@@ -8,11 +8,10 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 
 import dev.wolveringer.client.futures.BanStatsResponseFuture;
-import dev.wolveringer.client.futures.PacketResponseFuture;
 import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
+import dev.wolveringer.client.futures.SkinResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
-import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.dataserver.gamestats.GameType;
 import dev.wolveringer.dataserver.gamestats.StatsKey;
 import dev.wolveringer.dataserver.player.Setting;
@@ -29,9 +28,14 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit.Action;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsEdit.EditStats;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInStatsRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinSet;
 import dev.wolveringer.gamestats.Statistic;
+import dev.wolveringer.skin.Skin;
 
 public class LoadedPlayer {
 
@@ -113,7 +117,7 @@ public class LoadedPlayer {
 		return -1;
 	}
 	
-	public PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]> changeCoins(Action action,int coins){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> changeCoins(Action action,int coins){
 		return setStats(new EditStats(GameType.Money, action, StatsKey.COINS, coins));
 	}
 
@@ -129,7 +133,7 @@ public class LoadedPlayer {
 		return -1;
 	}
 
-	public PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]> changeGems(Action action,int coins){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> changeGems(Action action,int coins){
 		return setStats(new EditStats(GameType.Money, action, StatsKey.GEMS, coins));
 	}
 	
@@ -190,7 +194,7 @@ public class LoadedPlayer {
 		handle.handle.writePacket(p);
 		return f;
 	}
-	public StatusResponseFuture setStats(EditStats... changes){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> setStats(EditStats... changes){
 		Iterable<PacketInStatsEdit.EditStats> statis = Iterables.filter(Arrays.asList(changes),new Predicate<PacketInStatsEdit.EditStats>() {
 		    @Override
 		    public boolean apply(PacketInStatsEdit.EditStats arg0) {
@@ -209,10 +213,18 @@ public class LoadedPlayer {
 		handle.handle.writePacket(p);
 		return f;
 	}
-	public StatusResponseFuture banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
 		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
 	}
-	public StatusResponseFuture kickPlayer(String reson){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(String reson){
 		return handle.kickPlayer(getUUID(), reson);
+	}
+	public ProgressFuture<Skin> getOwnSkin() {
+		PacketSkinRequest r = new PacketSkinRequest(Type.FROM_PLAYER, null, getUUID());
+		handle.writePacket(r);
+		return new SkinResponseFuture(handle.handle, r, getUUID());
+	}
+	public ProgressFuture<PacketOutPacketStatus.Error[]> setOwnSkin(Skin skin){
+		return handle.writePacket(new PacketSkinSet(getUUID(), skin));
 	}
 }

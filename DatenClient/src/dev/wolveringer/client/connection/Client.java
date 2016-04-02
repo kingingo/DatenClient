@@ -3,27 +3,25 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
 import dev.wolveringer.dataserver.protocoll.packets.PacketHandschakeInStart;
+import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
 import lombok.Getter;
 
 public class Client {
 	public static Client createBungeecordClient(String name,InetSocketAddress target,BungeeCordActionListener listener,ServerInformations infos){
-		Client client = new Client(target, ClientType.BUNGEECORD, name);
+		Client client = new Client(target, ClientType.BUNGEECORD, name,infos);
 		client.externalHandler = listener;
-		client.infoSender = new ServerStatusSender(client, infos);
 		return client;
 	}
 	public static Client createServerClient(ClientType type,String name,InetSocketAddress target,ServerActionListener listener,ServerInformations infos){
 		if(type == ClientType.BUNGEECORD)
 			throw new RuntimeException();
-		Client client = new Client(target, type, name);
-		client.infoSender = new ServerStatusSender(client, infos);
+		Client client = new Client(target, type, name,infos);
 		client.externalHandler = listener;
 		return client;
 	}
@@ -41,8 +39,6 @@ public class Client {
 	@Getter
 	protected String name;
 	
-	private byte[] password;
-	
 	private int timeout = 5000;
 	
 	private ActionListener externalHandler;
@@ -54,26 +50,30 @@ public class Client {
 	protected boolean connected = false;
 	
 	protected ServerStatusSender infoSender;
+	private ServerInformations infoHandler;
 	
-	private Client(InetSocketAddress target,ClientType type,String clientName) {
+	private Client(InetSocketAddress target,ClientType type,String clientName,ServerInformations infoHandler) {
 		this.target = target;
 		this.type = type;
 		this.name = clientName;
-		this.timeOut = new TimeOutThread(this);
+		this.infoHandler = infoHandler;
 	}	
 	
 	public void connect(byte[] password) throws Exception{
-		this.password = password;
-		socket = new Socket(target.getAddress(),target.getPort());
+		if(isConnected())
+			throw new RuntimeException("Client alredy connected!");
+		this.socket = new Socket(target.getAddress(),target.getPort());
 		this.writer = new SocketWriter(this, socket.getOutputStream());
 		this.reader = new ReaderThread(this, socket.getInputStream());
-		connected = true;
 		this.boss = new PacketHandlerBoss(this);
+		this.timeOut = new TimeOutThread(this);
+		this.infoSender = new ServerStatusSender(this, infoHandler);
 		this.reader.start();
+		connected = true;
 		//Handschaking
 		writePacket(new PacketHandschakeInStart(host, name, password, type));
-		
 		long start = System.currentTimeMillis();
+		try{
 		while (!boss.handschakeComplete) {
 			try {
 				Thread.sleep(50);
@@ -81,6 +81,9 @@ public class Client {
 			}
 			if(start+timeout<System.currentTimeMillis())
 				throw new RuntimeException("Handschke needs longer than 5000ms");
+		}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		timeOut.start();
 		infoSender.start();
@@ -102,12 +105,21 @@ public class Client {
 		reader.close();
 		writer.close();
 		timeOut.stop();
+		infoSender.stop();
 		try {
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		externalHandler.disconnected();
+		socket = null;
+		reader = null;
+		writer = null;
+		timeOut = null;
+		infoSender = null;
+		lastPingTime = -1;
+		lastPing = -1;
+		boss.handschakeComplete = false;
 	}
 	
 	public void writePacket(Packet packet){
@@ -139,7 +151,13 @@ public class Client {
 	}
 	public static void main(String[] args) throws InterruptedException {
 		System.out.println("Starting test Client");
-		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01");
+		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01",new ServerInformations() {
+			@Override
+			public PacketInServerStatus getStatus() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
 		try {
 			client.connect("HelloWorld".getBytes());
 		} catch (Exception e) {

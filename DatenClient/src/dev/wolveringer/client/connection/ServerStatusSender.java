@@ -12,24 +12,33 @@ public class ServerStatusSender {
 	public ServerStatusSender(Client owner,ServerInformations infos) {
 		this.i = infos;
 		this.owner = owner;
+	}
+	public void start(){
+		if(thread != null){
+			try{
+				thread.stop();
+			}catch(Exception e){}
+		}
+		active = true;
 		this.thread = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
-				while (active && owner.socket.isConnected() && owner.isConnected()) {
+				while (active && owner.isConnected()) {
 					updateServerStats();
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e) {
 					}
 				}
+				thread = null;
 			}
 		});
-	}
-	public void start(){
-		active = true;
 		thread.start();
 	}
 	public void updateServerStats() {
 		owner.writePacket(i.getStatus());
+	}
+	public void stop() {
+		active = false;
 	}
 }
