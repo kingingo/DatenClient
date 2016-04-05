@@ -1,5 +1,7 @@
 package dev.wolveringer.client.futures;
 
+import java.util.Arrays;
+
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
@@ -15,7 +17,7 @@ public class ServerStatusResponseFuture extends PacketResponseFuture<PacketOutSe
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketOutServerStatus && ((PacketOutServerStatus) packet).getAction() == r.getAction() && ((PacketOutServerStatus) packet).getValue() == r.getValue()){
+		if(packet instanceof PacketOutServerStatus && ((PacketOutServerStatus) packet).getAction() == r.getAction() && ((PacketOutServerStatus) packet).getValue() == r.getValue() && Arrays.equals(((PacketOutServerStatus) packet).getGames(), r.getGames())){
 			done((PacketOutServerStatus) packet);
 		}
 	}

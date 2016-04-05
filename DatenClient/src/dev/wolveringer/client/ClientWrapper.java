@@ -28,6 +28,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInUUIDRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutLobbyServer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutTopTen;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
 import dev.wolveringer.skin.Skin;
@@ -124,10 +125,18 @@ public class ClientWrapper {
 
 	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server, boolean player) {
 		PacketInServerStatusRequest p;
-		writePacket(p = new PacketInServerStatusRequest(action, server, player));
+		if(action == Action.GAMETYPE)
+			throw new RuntimeException("GAMETYPE isnt an spectial server");
+		writePacket(p = new PacketInServerStatusRequest(action, server, player,null));
 		return new ServerStatusResponseFuture(handle, p);
 	}
 
+	public ServerStatusResponseFuture getGameTypeServerStatus(GameType[] types, boolean player) {
+		PacketInServerStatusRequest p;
+		writePacket(p = new PacketInServerStatusRequest(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action.GAMETYPE, null, player,types));
+		return new ServerStatusResponseFuture(handle, p);
+	}
+	
 	public ProgressFuture<PacketOutPacketStatus.Error[]> sendMessage(UUID player, String message) {
 		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] { new PacketChatMessage.Target(TargetType.PLAYER, null, player.toString()) });
 		return writePacket(p);
@@ -189,14 +198,16 @@ public class ClientWrapper {
 	}
 
 	public ProgressFuture<Skin> getSkin(String player) {
-		PacketSkinRequest r = new PacketSkinRequest(Type.NAME, player, null);
+		UUID requestUUID = UUID.randomUUID();
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID, Type.NAME, player, null);
 		handle.writePacket(r);
-		return new SkinResponseFuture(handle, r, player);
+		return new SkinResponseFuture(handle, r, requestUUID);
 	}
 
 	public ProgressFuture<Skin> getSkin(UUID player) {
-		PacketSkinRequest r = new PacketSkinRequest(Type.UUID, null, player);
+		UUID requestUUID = UUID.randomUUID();
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID, Type.UUID, null, player);
 		handle.writePacket(r);
-		return new SkinResponseFuture(handle, r, player);
+		return new SkinResponseFuture(handle, r, requestUUID);
 	}
 }

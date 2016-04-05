@@ -8,24 +8,18 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData;
 import dev.wolveringer.skin.Skin;
 
 public class SkinResponseFuture extends PacketResponseFuture<Skin> {
-	private String skinName = null;
-	private UUID skinUUID = null;
+	private UUID skinRequest = null;
 
-	public SkinResponseFuture(Client client, Packet request, String skinName) {
+	public SkinResponseFuture(Client client, Packet request, UUID requestUUID) {
 		super(client, request);
-		this.skinName = skinName;
-	}
-
-	public SkinResponseFuture(Client client, Packet request, UUID skinUUID) {
-		super(client, request);
-		this.skinUUID = skinUUID;
+		this.skinRequest = requestUUID;
 	}
 
 	@Override
 	public void handlePacket(Packet packet) {
 		if (packet instanceof PacketSkinData) {
 			PacketSkinData data = (PacketSkinData) packet;
-			if (data.getSkin().getProfileName().equalsIgnoreCase(skinName) || data.getSkin().getUUID() == skinUUID)
+			if (data.getRequestUUID().equals(skinRequest))
 				done(data.getSkin());
 		}
 	}
