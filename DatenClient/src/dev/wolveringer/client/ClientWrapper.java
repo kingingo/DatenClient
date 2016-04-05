@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
+import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
@@ -34,6 +35,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKe
 import dev.wolveringer.skin.Skin;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 
@@ -199,15 +201,67 @@ public class ClientWrapper {
 
 	public ProgressFuture<Skin> getSkin(String player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID, Type.NAME, player, null);
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, player, null)});
 		handle.writePacket(r);
-		return new SkinResponseFuture(handle, r, requestUUID);
+		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
+			@Override
+			public Skin transform(SkinResponse[] obj) {
+				if(obj.length >= 0)
+					return obj[0].getSkin();
+				return null;
+			}
+		};
 	}
 
+	public ProgressFuture<Skin[]> getSkin(String... players) {
+		UUID requestUUID = UUID.randomUUID();
+		PacketSkinRequest.SkinRequest[] requests = new PacketSkinRequest.SkinRequest[players.length];
+		for(int i = 0;i<requests.length;i++){
+			requests[i] = new PacketSkinRequest.SkinRequest(Type.NAME, players[i], null);
+		}
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,requests);
+		handle.writePacket(r);
+		return new FutureResponseTransformer<SkinResponse[], Skin[]>(new SkinResponseFuture(handle, r, requestUUID)) {
+			@Override
+			public Skin[] transform(SkinResponse[] obj) {
+				Skin[] out = new Skin[obj.length];
+				for(int i = 0;i<obj.length;i++)
+					out[i] = obj[i].getSkin();
+				return out;
+			}
+		};
+	}
+	
+	public ProgressFuture<Skin[]> getSkin(UUID... players) {
+		UUID requestUUID = UUID.randomUUID();
+		PacketSkinRequest.SkinRequest[] requests = new PacketSkinRequest.SkinRequest[players.length];
+		for(int i = 0;i<requests.length;i++){
+			requests[i] = new PacketSkinRequest.SkinRequest(Type.NAME, null, players[i]);
+		}
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,requests);
+		handle.writePacket(r);
+		return new FutureResponseTransformer<SkinResponse[], Skin[]>(new SkinResponseFuture(handle, r, requestUUID)) {
+			@Override
+			public Skin[] transform(SkinResponse[] obj) {
+				Skin[] out = new Skin[obj.length];
+				for(int i = 0;i<obj.length;i++)
+					out[i] = obj[i].getSkin();
+				return out;
+			}
+		};
+	}
+	
 	public ProgressFuture<Skin> getSkin(UUID player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID, Type.UUID, null, player);
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, null, player)});
 		handle.writePacket(r);
-		return new SkinResponseFuture(handle, r, requestUUID);
+		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
+			@Override
+			public Skin transform(SkinResponse[] obj) {
+				if(obj.length >= 0)
+					return obj[0].getSkin();
+				return null;
+			}
+		};
 	}
 }

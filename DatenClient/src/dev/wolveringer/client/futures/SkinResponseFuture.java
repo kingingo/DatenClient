@@ -5,9 +5,10 @@ import java.util.UUID;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
 import dev.wolveringer.skin.Skin;
 
-public class SkinResponseFuture extends PacketResponseFuture<Skin> {
+public class SkinResponseFuture extends PacketResponseFuture<SkinResponse[]> {
 	private UUID skinRequest = null;
 
 	public SkinResponseFuture(Client client, Packet request, UUID requestUUID) {
@@ -20,7 +21,7 @@ public class SkinResponseFuture extends PacketResponseFuture<Skin> {
 		if (packet instanceof PacketSkinData) {
 			PacketSkinData data = (PacketSkinData) packet;
 			if (data.getRequestUUID().equals(skinRequest))
-				done(data.getSkin());
+				done(data.getReponse());
 		}
 	}
 

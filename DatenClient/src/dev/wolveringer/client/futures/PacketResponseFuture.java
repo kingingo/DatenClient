@@ -3,13 +3,12 @@ package dev.wolveringer.client.futures;
 import java.util.UUID;
 
 import dev.wolveringer.client.PacketHandleErrorException;
-import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.PacketListener;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 
-public abstract class PacketResponseFuture<T> extends ProgressFuture<T> implements PacketListener{
+public abstract class PacketResponseFuture<T> extends BaseProgressFuture<T> implements PacketListener{
 	private Client client;
 	private UUID handle;
 	

@@ -8,6 +8,8 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 
 import dev.wolveringer.client.futures.BanStatsResponseFuture;
+import dev.wolveringer.client.futures.BaseProgressFuture;
+import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.ServerResponseFurure;
 import dev.wolveringer.client.futures.SettingsResponseFuture;
 import dev.wolveringer.client.futures.SkinResponseFuture;
@@ -32,11 +34,12 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.SkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinSet;
 import dev.wolveringer.gamestats.Statistic;
 import dev.wolveringer.skin.Skin;
-import dev.wolveringer.skin.SteveSkin;
 
 public class LoadedPlayer {
 
@@ -47,12 +50,7 @@ public class LoadedPlayer {
 	private boolean loaded;
 
 	protected LoadedPlayer(ClientWrapper client, String name) {
-		this(client,name,null);
-	}
-	
-	protected LoadedPlayer(ClientWrapper client, String name, UUID uuid) {
 		this.name = name;
-		this.uuid=uuid;
 		this.handle = client;
 	}
 
@@ -226,9 +224,16 @@ public class LoadedPlayer {
 	}
 	public ProgressFuture<Skin> getOwnSkin() {
 		UUID uuid = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(uuid, Type.FROM_PLAYER, null, getUUID());
+		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, null, getUUID())});
 		handle.writePacket(r);
-		return new SkinResponseFuture(handle.handle, r, uuid);
+		return new FutureResponseTransformer<SkinResponse[],Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
+			@Override
+			public Skin transform(SkinResponse[] obj) {
+				if(obj.length >= 0)
+					return obj[0].getSkin();
+				return null;
+			}
+		};
 	}
 	public ProgressFuture<PacketOutPacketStatus.Error[]> setOwnSkin(Skin skin){
 		if(skin == null)
