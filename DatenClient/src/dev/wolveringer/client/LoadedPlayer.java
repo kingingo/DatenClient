@@ -47,9 +47,13 @@ public class LoadedPlayer {
 	private boolean loaded;
 
 	protected LoadedPlayer(ClientWrapper client, String name) {
+		this(client,name,null);
+	}
+	
+	protected LoadedPlayer(ClientWrapper client, String name, UUID uuid) {
 		this.name = name;
+		this.uuid=uuid;
 		this.handle = client;
-
 	}
 
 	protected void loadUUID() {
