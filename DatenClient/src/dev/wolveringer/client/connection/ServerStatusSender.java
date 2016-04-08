@@ -23,6 +23,7 @@ public class ServerStatusSender {
 		this.thread = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
+				System.out.println("Start to sending updateinformations from: "+i.getClass().getName());
 				while (active && owner.isConnected()) {
 					updateServerStats();
 					try {
@@ -30,6 +31,7 @@ public class ServerStatusSender {
 					} catch (InterruptedException e) {
 					}
 				}
+				System.out.println("Stopping sending updates States: "+active+":"+owner.isConnected());
 				thread = null;
 			}
 		});

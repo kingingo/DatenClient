@@ -16,11 +16,13 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutGammodeChange;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutHandschakeAccept;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPing;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
-import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPong;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.PlayerAction;
 import dev.wolveringer.event.EventListener;
@@ -34,7 +36,9 @@ public class PacketHandlerBoss {
 	
 	private Client owner;
 	protected boolean handschakeComplete = false;
-
+	protected Error[] handschakeErrors = null;
+	protected String handschakeDisconnect = null;
+	
 	public PacketHandlerBoss(Client owner) {
 		this.owner = owner;
 	}
@@ -64,6 +68,9 @@ public class PacketHandlerBoss {
 			*/
 		}
 		else if(packet instanceof PacketOutPacketStatus){
+			if(handschakeComplete == false){
+				handschakeErrors = ((PacketOutPacketStatus) packet).getErrors();
+			}
 			if(((PacketOutPacketStatus)packet).getErrors().length == 0){
 				if(debug)
 					System.out.println("Packet sucessfull handled ("+((PacketOutPacketStatus)packet).getPacketId()+")");
@@ -81,6 +88,9 @@ public class PacketHandlerBoss {
 		else if(packet instanceof PacketDisconnect){
 			if(debug)
 				System.out.println("Disconnected: "+((PacketDisconnect)packet).getReson());
+			if(handschakeComplete == false){
+				handschakeDisconnect = ((PacketDisconnect)packet).getReson();
+			}
 			owner.closePipeline();
 		}
 		else if(packet instanceof PacketOutPlayerSettings){
@@ -138,9 +148,12 @@ public class PacketHandlerBoss {
 				}
 			}
 		}
-		else if(packet instanceof PacketPingPong){
-			owner.lastPing = System.currentTimeMillis()-((PacketPingPong)packet).getTime();
+		else if(packet instanceof PacketPong){
+			owner.lastPing = System.currentTimeMillis()-((PacketPong)packet).getTime();
 			owner.lastPingTime = System.currentTimeMillis();
+		}
+		else if(packet instanceof PacketPing){
+			owner.writePacket(new PacketPong(System.currentTimeMillis()));
 		}
 		else if(packet instanceof PacketServerMessage){
 			DataBuffer buffer;
@@ -157,8 +170,8 @@ public class PacketHandlerBoss {
 		if(packet instanceof PacketForward){
 			Packet pack = ((PacketForward) packet).getPacket();
 			if(pack != null)
-			for(PacketListener l : new ArrayList<>(listener))
-				l.handle(pack);
+				for(PacketListener l : new ArrayList<>(listener))
+					l.handle(pack);
 		}
 		else
 			for(PacketListener l : new ArrayList<>(listener))

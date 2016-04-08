@@ -37,7 +37,7 @@ public class ReaderThread {
 							Thread.sleep(10);
 					}
 				} catch (Exception e) {
-					if(e.getMessage().equalsIgnoreCase("sleep interrupted"))
+					if("sleep interrupted".equalsIgnoreCase(e.getMessage()))
 						return;
 					if (!active)
 						return;

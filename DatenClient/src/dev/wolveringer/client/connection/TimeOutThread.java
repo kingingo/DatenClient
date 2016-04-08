@@ -2,31 +2,31 @@ package dev.wolveringer.client.connection;
 
 import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.client.threadfactory.ThreadRunner;
-import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPing;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPong;
 
 public class TimeOutThread {
-	ThreadRunner runner;
-	Client owner;
-	long maxTime = 8000;
-	boolean active = false;
+	private ThreadRunner runner;
+	private Client owner;
+	private long maxTime = 8000;
+	private boolean active = false;
+
 	public TimeOutThread(Client cleint) {
 		this.owner = cleint;
 		init();
 	}
-	
-	private void init(){
+
+	private void init() {
 		runner = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
 				while (owner.socket.isConnected() && active) {
-					try{
-						owner.writePacket(new PacketPingPong(System.currentTimeMillis()));
-					}catch(Exception e){
-					
-					}
-					if(System.currentTimeMillis()-owner.lastPingTime>maxTime&& owner.lastPingTime != -1){
-						owner.disconnect("Server -> Client -> Timeout!");
-						System.out.println("Client timed out ("+(System.currentTimeMillis()-owner.lastPingTime)+")");
+					try {
+						owner.writePacket(new PacketPing(System.currentTimeMillis()));
+					} catch (Exception e) {}
+					if (System.currentTimeMillis() - owner.lastPingTime > maxTime && owner.lastPingTime != -1) {
+						owner.disconnect("Client ->  Server -> Timeout! (Clientbased!)");
+						System.out.println("Client timed out (" + (System.currentTimeMillis() - owner.lastPingTime) + ")");
 						return;
 					}
 					try {
@@ -37,7 +37,8 @@ public class TimeOutThread {
 			}
 		});
 	}
-	public void start(){
+
+	public void start() {
 		active = true;
 		runner.start();
 	}

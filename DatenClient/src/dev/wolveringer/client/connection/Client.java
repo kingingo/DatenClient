@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import javax.management.RuntimeErrorException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
@@ -84,17 +88,23 @@ public class Client {
 		//Handschaking
 		writePacket(new PacketHandschakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
 		long start = System.currentTimeMillis();
-		try {
-			while (!boss.handschakeComplete) {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-				}
-				if (start + timeout < System.currentTimeMillis())
-					throw new RuntimeException("Handschke needs longer than 5000ms");
+		while (!boss.handschakeComplete) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			if(boss.handschakeErrors != null){
+				disconnect();
+				throw new RuntimeException("Errors happend while handschaking: \n"+StringUtils.join(boss.handschakeErrors,"\n -"));
+			}
+			if(boss.handschakeDisconnect != null){
+				disconnect();
+				throw new RuntimeException("Server denied connection. Reson: "+boss.handschakeDisconnect);
+			}
+			if (start + timeout < System.currentTimeMillis()){
+				disconnect();
+				throw new RuntimeException("Handschake needs longer than 5000ms");
+			}
 		}
 		timeOut.start();
 		infoSender.start();
@@ -194,5 +204,9 @@ public class Client {
 
 	public void updateServerStats() {
 		infoSender.updateServerStats();
+	}
+	
+	public boolean isHandschakeCompleded(){
+		return boss == null ? false : boss.handschakeComplete;
 	}
 }
