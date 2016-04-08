@@ -3,33 +3,40 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
+import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
 import dev.wolveringer.dataserver.protocoll.packets.PacketHandschakeInStart;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
+import dev.wolveringer.event.EventManager;
 import lombok.Getter;
 
 public class Client {
-	public static Client createBungeecordClient(String name,InetSocketAddress target,BungeeCordActionListener listener,ServerInformations infos){
-		Client client = new Client(target, ClientType.BUNGEECORD, name,infos);
+	public static Client createBungeecordClient(String name, InetSocketAddress target, BungeeCordActionListener listener, ServerInformations infos) {
+		Client client = new Client(target, ClientType.BUNGEECORD, name, infos);
 		client.externalHandler = listener;
 		return client;
 	}
-	public static Client createServerClient(ClientType type,String name,InetSocketAddress target,ServerActionListener listener,ServerInformations infos){
-		if(type == ClientType.BUNGEECORD)
+
+	public static Client createServerClient(ClientType type, String name, InetSocketAddress target, ServerActionListener listener, ServerInformations infos) {
+		if (type == ClientType.BUNGEECORD)
 			throw new RuntimeException();
-		Client client = new Client(target, type, name,infos);
+		Client client = new Client(target, type, name, infos);
 		client.externalHandler = listener;
 		return client;
 	}
-	
+
 	private InetSocketAddress target;
 	@Getter
 	protected ClientType type;
-	
+
 	protected Socket socket;
 	private ReaderThread reader;
 	private SocketWriter writer;
@@ -38,31 +45,35 @@ public class Client {
 	protected String host = "underknown";
 	@Getter
 	protected String name;
-	
+
 	private int timeout = 5000;
-	
+
 	private ActionListener externalHandler;
-	
+
 	protected long lastPingTime = -1;
 	protected long lastPing = -1;
 	private TimeOutThread timeOut;
-	
+
 	protected boolean connected = false;
-	
+
 	protected ServerStatusSender infoSender;
 	private ServerInformations infoHandler;
-	
-	private Client(InetSocketAddress target,ClientType type,String clientName,ServerInformations infoHandler) {
+
+	@Getter
+	private EventManager eventManager;
+
+	private Client(InetSocketAddress target, ClientType type, String clientName, ServerInformations infoHandler) {
 		this.target = target;
 		this.type = type;
 		this.name = clientName;
 		this.infoHandler = infoHandler;
-	}	
-	
-	public void connect(byte[] password) throws Exception{
-		if(isConnected())
+		this.eventManager = new EventManager(this);
+	}
+
+	public void connect(byte[] password) throws Exception {
+		if (isConnected())
 			throw new RuntimeException("Client alredy connected!");
-		this.socket = new Socket(target.getAddress(),target.getPort());
+		this.socket = new Socket(target.getAddress(), target.getPort());
 		this.writer = new SocketWriter(this, socket.getOutputStream());
 		this.reader = new ReaderThread(this, socket.getInputStream());
 		this.boss = new PacketHandlerBoss(this);
@@ -71,35 +82,35 @@ public class Client {
 		this.reader.start();
 		connected = true;
 		//Handschaking
-		writePacket(new PacketHandschakeInStart(host, name, password, type));
+		writePacket(new PacketHandschakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
 		long start = System.currentTimeMillis();
-		try{
-		while (!boss.handschakeComplete) {
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
+		try {
+			while (!boss.handschakeComplete) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+				}
+				if (start + timeout < System.currentTimeMillis())
+					throw new RuntimeException("Handschke needs longer than 5000ms");
 			}
-			if(start+timeout<System.currentTimeMillis())
-				throw new RuntimeException("Handschke needs longer than 5000ms");
-		}
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		timeOut.start();
 		infoSender.start();
 	}
-	
-	public void disconnect(){
+
+	public void disconnect() {
 		disconnect(null);
 	}
-	
-	public void disconnect(String message){
+
+	public void disconnect(String message) {
 		writePacket(new PacketDisconnect(message));
 		closePipeline();
 	}
-	
-	protected void closePipeline(){
-		if(!connected)
+
+	protected void closePipeline() {
+		if (!connected)
 			return;
 		connected = false;
 		reader.close();
@@ -121,14 +132,21 @@ public class Client {
 		lastPing = -1;
 		boss.handschakeComplete = false;
 	}
-	
-	public void writePacket(Packet packet){
+
+	public ProgressFuture<Error[]> writePacket(Packet packet) {
+		StatusResponseFuture f = new StatusResponseFuture(this, packet.getPacketUUID());
+		writePacket0(packet);
+		return f;
+
+	}
+
+	private void writePacket0(Packet packet) {
 		try {
 			writer.write(packet);
 		} catch (IOException e) {
-			if(e.getMessage().equalsIgnoreCase("Broken pipe") || e.getMessage().equalsIgnoreCase("Connection reset"))
+			if (e.getMessage().equalsIgnoreCase("Broken pipe") || e.getMessage().equalsIgnoreCase("Connection reset"))
 				return;
-			if(e.getMessage().equalsIgnoreCase("Socket closed")){
+			if (e.getMessage().equalsIgnoreCase("Socket closed")) {
 				connected = false;
 				reader.close();
 				writer.close();
@@ -137,21 +155,26 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
-	public PacketHandlerBoss getHandlerBoss(){
+
+	public PacketHandlerBoss getHandlerBoss() {
 		return boss;
 	}
+
 	protected ActionListener getExternalHandler() {
 		return externalHandler;
 	}
+
 	public long getPing() {
 		return lastPing;
 	}
+
 	public boolean isConnected() {
 		return connected;
 	}
+
 	public static void main(String[] args) throws InterruptedException {
 		System.out.println("Starting test Client");
-		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01",new ServerInformations() {
+		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01", new ServerInformations() {
 			@Override
 			public PacketInServerStatus getStatus() {
 				// TODO Auto-generated method stub
@@ -167,6 +190,7 @@ public class Client {
 			Thread.sleep(10000);
 		}
 	}
+
 	public void updateServerStats() {
 		infoSender.updateServerStats();
 	}

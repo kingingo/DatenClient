@@ -11,6 +11,7 @@ import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.Target;
 import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
+import dev.wolveringer.dataserver.protocoll.packets.PacketEventFire;
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutGammodeChange;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutHandschakeAccept;
@@ -22,6 +23,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKe
 import dev.wolveringer.dataserver.protocoll.packets.PacketPingPong;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.PlayerAction;
+import dev.wolveringer.event.EventListener;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSettingUpdate;
 
@@ -147,6 +149,10 @@ public class PacketHandlerBoss {
 		}
 		else if(packet instanceof PacketSettingUpdate){
 			owner.getExternalHandler().settingUpdate(((PacketSettingUpdate) packet).getPlayer(), ((PacketSettingUpdate) packet).getSetting(), ((PacketSettingUpdate) packet).getValue());
+		}
+		else if(packet instanceof PacketEventFire){
+			for(EventListener l : owner.getEventManager().getListener())
+				l.fireEvent(((PacketEventFire) packet).getEvent());
 		}
 		if(packet instanceof PacketForward){
 			Packet pack = ((PacketForward) packet).getPacket();

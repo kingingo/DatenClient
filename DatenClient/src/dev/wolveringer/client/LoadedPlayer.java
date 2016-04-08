@@ -40,6 +40,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinSet;
 import dev.wolveringer.gamestats.Statistic;
 import dev.wolveringer.skin.Skin;
+import dev.wolveringer.skin.SteveSkin;
 
 public class LoadedPlayer {
 
@@ -224,13 +225,17 @@ public class LoadedPlayer {
 	}
 	public ProgressFuture<Skin> getOwnSkin() {
 		UUID uuid = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, null, getUUID())});
+		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, getUUID())});
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[],Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
 			@Override
 			public Skin transform(SkinResponse[] obj) {
-				if(obj.length >= 0)
+				if(obj.length > 0){
+					if(obj[0] == null){
+						return new SteveSkin();
+					}
 					return obj[0].getSkin();
+				}
 				return null;
 			}
 		};
