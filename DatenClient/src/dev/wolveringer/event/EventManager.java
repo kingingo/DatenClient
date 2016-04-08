@@ -38,7 +38,7 @@ public class EventManager {
 	}
 	
 	public List<EventListener> getListener(){
-		return (List<EventListener>) Collections.unmodifiableCollection(new ArrayList<>(listeners));
+		return Collections.unmodifiableList(new ArrayList<>(listeners));
 	}
 	
 	public SpecificEventManager getEventManager(EventType type){
@@ -46,6 +46,11 @@ public class EventManager {
 	}
 	public Client getHandle() {
 		return handle;
+	}
+	
+	public void updateAll(){
+		for(SpecificEventManager m : managers.values())
+			m.updateAll();
 	}
 	
 	protected void writePacket(Packet packet){

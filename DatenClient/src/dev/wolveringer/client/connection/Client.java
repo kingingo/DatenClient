@@ -98,6 +98,7 @@ public class Client {
 		}
 		timeOut.start();
 		infoSender.start();
+		eventManager.updateAll();
 	}
 
 	public void disconnect() {

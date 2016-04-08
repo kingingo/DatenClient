@@ -99,4 +99,9 @@ public class SpecificEventManager {
 		System.out.println("Condition updated: "+condition.getCondition().getCondition()+" Active: "+condition.isActive());
 		handle.writePacket(new PacketEventCondition(type, condition.getCondition().getCondition(), condition.active,condition.getCondition()));
 	}
+
+	public void updateAll() {
+		for(ToggleableEventCondition c :  conditions.values())
+			updateEventCondition(c);
+	}
 }

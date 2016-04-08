@@ -11,7 +11,6 @@ import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.SkinResponseFuture;
-import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.client.futures.TopTenResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
 import dev.wolveringer.dataserver.gamestats.GameType;
@@ -34,13 +33,11 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutTopTen;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
 import dev.wolveringer.skin.Skin;
 import dev.wolveringer.skin.SteveSkin;
-import lombok.Getter;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
-import dev.wolveringer.event.EventManager;
 
 public class ClientWrapper {
 	protected Client handle;
