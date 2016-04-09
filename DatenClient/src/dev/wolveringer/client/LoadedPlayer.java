@@ -16,6 +16,7 @@ import dev.wolveringer.client.futures.SkinResponseFuture;
 import dev.wolveringer.client.futures.StatsResponseFuture;
 import dev.wolveringer.dataserver.gamestats.GameType;
 import dev.wolveringer.dataserver.gamestats.StatsKey;
+import dev.wolveringer.dataserver.player.LanguageType;
 import dev.wolveringer.dataserver.player.Setting;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInBanPlayer;
@@ -144,7 +145,7 @@ public class LoadedPlayer {
 	public LanguageType getLanguageSync(){
 		SettingValue[] response = getSettings(Setting.LANGUAGE).getSyncSave();
 		if (response != null && response.length == 1 && response[0].getSetting() == Setting.LANGUAGE)
-			return LanguageType.get(response[0].getValue());
+			return LanguageType.getLanguageFromName(response[0].getValue());
 		return LanguageType.ENGLISH;
 	}
 	
