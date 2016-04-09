@@ -9,8 +9,11 @@ import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 
 public abstract class PacketResponseFuture<T> extends BaseProgressFuture<T> implements PacketListener{
+	private static final long defaultTimeout = 60*1000;
 	private Client client;
 	private UUID handle;
+	private long timeout = defaultTimeout;
+	private long start = System.currentTimeMillis();
 	
 	public PacketResponseFuture(Client client,Packet handeling) {
 		if(handeling != null)
@@ -24,9 +27,18 @@ public abstract class PacketResponseFuture<T> extends BaseProgressFuture<T> impl
 		client.getHandlerBoss().removeListener(this);
 		super.done(response);
 	}
+	@Override
+	protected void done(PacketHandleErrorException e) {
+		client.getHandlerBoss().removeListener(this);
+		super.done(e);
+	}
 	
 	@Override
 	public void handle(Packet packet) {
+		if(start+timeout<System.currentTimeMillis()){
+			done(new PacketHandleErrorException(new PacketOutPacketStatus(handle, new PacketOutPacketStatus.Error[]{new PacketOutPacketStatus.Error(1, "PacketResponseFuture -> timeout")})));
+			return;
+		}
 		if(packet instanceof PacketOutPacketStatus && ((PacketOutPacketStatus) packet).getPacketId().equals(this.handle)){
 			done(new PacketHandleErrorException((PacketOutPacketStatus) packet));
 		}

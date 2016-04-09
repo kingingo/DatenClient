@@ -7,6 +7,7 @@ import java.util.UUID;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
+import dev.wolveringer.client.futures.LanguageUpdateFuture;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.NameFutureResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
@@ -15,6 +16,7 @@ import dev.wolveringer.client.futures.TopTenResponseFuture;
 import dev.wolveringer.client.futures.UUIDFuture;
 import dev.wolveringer.dataserver.gamestats.GameType;
 import dev.wolveringer.dataserver.gamestats.StatsKey;
+import dev.wolveringer.dataserver.player.LanguageType;
 import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
@@ -26,6 +28,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketInNameRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInUUIDRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketLanguageRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutLobbyServer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action;
@@ -267,5 +270,16 @@ public class ClientWrapper {
 				return new SteveSkin();
 			}
 		};
+	}
+	
+	/**
+	 * 
+	 * @param type == null than no update found
+	 * @return
+	 */
+	public ProgressFuture<String> requestLanguageUpdate(LanguageType type,double curruntVersion){
+		PacketLanguageRequest r = new PacketLanguageRequest(type, curruntVersion);
+		handle.writePacket(r);
+		return new LanguageUpdateFuture<>(handle, r);
 	}
 }

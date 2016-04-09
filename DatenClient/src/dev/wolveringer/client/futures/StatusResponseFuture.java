@@ -8,7 +8,6 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 
 public class StatusResponseFuture extends PacketResponseFuture<dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error[]>{
 	private UUID packet;
-	
 	public StatusResponseFuture(Client client,UUID packet) {
 		super(client,null);
 		this.packet = packet;
