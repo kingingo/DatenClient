@@ -260,4 +260,7 @@ public class LoadedPlayer {
 		else
 			return handle.writePacket(new PacketSkinSet(playerId, skin));
 	}
+	public void loadPlayer() {
+		load();
+	}
 }

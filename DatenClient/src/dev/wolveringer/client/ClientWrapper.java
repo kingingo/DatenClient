@@ -1,7 +1,6 @@
 package dev.wolveringer.client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
 
 import dev.wolveringer.client.connection.Client;
@@ -108,6 +107,10 @@ public class ClientWrapper {
 		for (LoadedPlayer s : new ArrayList<>(players))
 			if (s.equals(player))
 				players.remove(s);
+	}
+	
+	public ArrayList<LoadedPlayer> getPlayers() {
+		return players;
 	}
 	
 	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server) {
