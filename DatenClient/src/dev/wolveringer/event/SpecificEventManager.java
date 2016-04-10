@@ -25,22 +25,28 @@ public class SpecificEventManager {
 		}
 		
 		public void setActive(boolean flag){
+			System.out.println("Setactive: "+flag+":"+active);
 			if(active == flag)
 				return;
 			active = flag;
-			if(active)
-				((ChangeableEventCondition<T>)this.condition).addListener(this);
-			else
-				((ChangeableEventCondition<T>)this.condition).removeListener(this);
+			if(active){
+				((ChangeableEventCondition)this.condition).addListener(this);
+				System.out.println("Active listener");
+			}else{
+				((ChangeableEventCondition)this.condition).removeListener(this);
+				System.out.println("deactive listener");
+			}
 		}
 
 		@Override
 		public void onValueAdd(EventCondition con, T obj) {
+			System.out.println("Update add: "+active+":"+con.getCondition());
 			handle.updateEventCondition(this);
 		}
 
 		@Override
 		public void onValueRemove(EventCondition con, T obj) {
+			System.out.println("Update remove: "+active+":"+con.getCondition());
 			handle.updateEventCondition(this);
 		}
 	}
@@ -63,6 +69,12 @@ public class SpecificEventManager {
 		this.enabled = enabled; //TODO sync with datenserver!
 		this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()));
 	}
+	
+	public void setEventEnabled(boolean enabled,boolean sync) {
+		this.enabled = enabled; //TODO sync with datenserver!
+		this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()),sync);
+	}
+	
 	public boolean isEventEnabled() {
 		return enabled;
 	}
@@ -101,7 +113,7 @@ public class SpecificEventManager {
 	}
 
 	public void updateAll() {
-		for(ToggleableEventCondition c :  conditions.values())
-			updateEventCondition(c);
+		setEventEnabled(false,true);
+		setEventEnabled(true,true);
 	}
 }

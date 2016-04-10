@@ -54,6 +54,10 @@ public class EventManager {
 	}
 	
 	protected void writePacket(Packet packet){
+		writePacket(packet,sync);
+	}
+	
+	protected void writePacket(Packet packet,boolean sync){
 		if(sync)
 			handle.writePacket(packet).getSync();
 		else

@@ -1,5 +1,6 @@
 package dev.wolveringer.client;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
@@ -10,7 +11,7 @@ public class PacketHandleErrorException extends RuntimeException{
 	private PacketOutPacketStatus packet;
 	
 	public PacketHandleErrorException(PacketOutPacketStatus packet) {
-		super(packet.getErrors().length+" errors incurred in this action");
+		super(packet.getErrors().length+" errors incurred in this action "+Arrays.deepToString(packet.getErrors())+"");
 		this.packet = packet;
 	}
 	

@@ -9,11 +9,10 @@ import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.LanguageUpdateFuture;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
-import dev.wolveringer.client.futures.NameFutureResponseFuture;
+import dev.wolveringer.client.futures.PlayerIdResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
 import dev.wolveringer.client.futures.SkinResponseFuture;
 import dev.wolveringer.client.futures.TopTenResponseFuture;
-import dev.wolveringer.client.futures.UUIDFuture;
 import dev.wolveringer.dataserver.gamestats.GameType;
 import dev.wolveringer.dataserver.gamestats.StatsKey;
 import dev.wolveringer.dataserver.player.LanguageType;
@@ -24,16 +23,14 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest.GameRequest;
-import dev.wolveringer.dataserver.protocoll.packets.PacketInNameRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInTopTenRequest;
-import dev.wolveringer.dataserver.protocoll.packets.PacketInUUIDRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketLanguageRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutLobbyServer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutTopTen;
-import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
+import dev.wolveringer.dataserver.protocoll.packets.PacketPlayerIdRequest;
 import dev.wolveringer.skin.Skin;
 import dev.wolveringer.skin.SteveSkin;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
@@ -44,84 +41,75 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 
 public class ClientWrapper {
 	protected Client handle;
-	private HashMap<String, LoadedPlayer> players = new HashMap<>();
-	private HashMap<UUID, LoadedPlayer> uuidPlayers = new HashMap<>();
+	private ArrayList<LoadedPlayer> players = new ArrayList<LoadedPlayer>();
 
 	public ClientWrapper(Client handle) {
 		this.handle = handle;
-	}
-
-	public UUIDFuture getUUID(String... players) {
-		Packet packet = new PacketInUUIDRequest(players);
-		UUIDFuture future = new UUIDFuture(handle, packet, players);
-		handle.writePacket(packet);
-		return future;
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> writePacket(Packet packet) {
 		return handle.writePacket(packet);
 	}
 
+	@Deprecated
 	public LoadedPlayer getPlayer(String name) {
-		if (players.containsKey(name))
-			return players.get(name);
+		for(LoadedPlayer player : players)
+			if(player.getName().equalsIgnoreCase(name))
+				return player;
 		LoadedPlayer player = new LoadedPlayer(this, name);
-		players.put(name, player);
+		players.add(player);
 		return player;
 	}
 
+	@Deprecated
 	public LoadedPlayer getPlayer(UUID uuid) {
-		if (uuidPlayers.containsKey(uuid))
-			return uuidPlayers.get(uuid);
-		String name = getName(uuid);
-		if (name == null)
-			throw new NullPointerException("Player not found");
-		return getPlayer(name);
+		for(LoadedPlayer player : players)
+			if(player.getUUID().equals(uuid))
+				return player;
+		LoadedPlayer player = new LoadedPlayer(this, uuid);
+		players.add(player);
+		return player;
 	}
 
+	public LoadedPlayer getPlayer(int id) {
+		for(LoadedPlayer player : players)
+			if(player.getPlayerId() == id)
+				return player;
+		LoadedPlayer player = new LoadedPlayer(this, id);
+		players.add(player);
+		return player;
+	}
+	
+	
 	public LoadedPlayer getPlayerAndLoad(String name) {
 		LoadedPlayer player = getPlayer(name);
 		if (!player.isLoaded())
 			player.load();
-		if (!players.containsKey(player.getName()))
-			players.put(player.getName(), player);
-		if (!uuidPlayers.containsKey(player.getUUID()))
-			uuidPlayers.put(player.getUUID(), player);
 		return player;
 	}
 
-	public LoadedPlayer getPlayerAndLoad(UUID name) {
-		LoadedPlayer player = getPlayer(name);
+	public LoadedPlayer getPlayerAndLoad(UUID uuid) {
+		LoadedPlayer player = getPlayer(uuid);
 		if (!player.isLoaded())
 			player.load();
-		if (!uuidPlayers.containsKey(player.getUUID()))
-			uuidPlayers.put(player.getUUID(), player);
-		if (!players.containsKey(player.getName()))
-			players.put(player.getName(), player);
+		return player;
+	}
+	
+	public LoadedPlayer getPlayerAndLoad(int id) {
+		LoadedPlayer player = getPlayer(id);
+		if (!player.isLoaded())
+			player.load();
 		return player;
 	}
 
 	public void clearCacheForPlayer(LoadedPlayer player) {
 		if (player == null)
 			return;
-		for (String s : new ArrayList<>(players.keySet()))
-			if (players.get(s).equals(player))
+		for (LoadedPlayer s : new ArrayList<>(players))
+			if (s.equals(player))
 				players.remove(s);
-		for (UUID s : new ArrayList<>(uuidPlayers.keySet()))
-			if (uuidPlayers.get(s).equals(player))
-				uuidPlayers.remove(s);
 	}
-
-	private String getName(UUID uuid) {
-		PacketInNameRequest r = new PacketInNameRequest(new UUID[] { uuid });
-		NameFutureResponseFuture f = new NameFutureResponseFuture(handle, r, new UUID[] { uuid });
-		handle.writePacket(r);
-		UUIDKey[] key = f.getSync();
-		if (key.length == 1)
-			return key[0].getName();
-		return null;
-	}
-
+	
 	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server) {
 		return getServerStatus(action, server, false);
 	}
@@ -132,6 +120,18 @@ public class ClientWrapper {
 			throw new RuntimeException("GAMETYPE isnt an spectial server");
 		writePacket(p = new PacketInServerStatusRequest(action, server, player,null));
 		return new ServerStatusResponseFuture(handle, p);
+	}
+	
+	public ProgressFuture<int[]> getPlayerIds(String...player){
+		PacketPlayerIdRequest request = new PacketPlayerIdRequest(player);
+		writePacket(request);
+		return new PlayerIdResponseFuture(handle, request);
+	}
+	
+	public ProgressFuture<int[]> getPlayerIds(UUID...player){
+		PacketPlayerIdRequest request = new PacketPlayerIdRequest(player);
+		writePacket(request);
+		return new PlayerIdResponseFuture(handle, request);
 	}
 
 	public ServerStatusResponseFuture getGameTypeServerStatus(GameType[] types, boolean player) {
@@ -150,7 +150,7 @@ public class ClientWrapper {
 		return writePacket(p);
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(UUID player, String reson) {
+	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(int player, String reson) {
 		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[] { new PacketServerAction.PlayerAction(player, PacketServerAction.Action.KICK, reson) });
 		return writePacket(action);
 	}
@@ -183,11 +183,6 @@ public class ClientWrapper {
 		return handle;
 	}
 
-	protected void changeUUID(LoadedPlayer player, UUID oldUUID, UUID newUUID) {
-		uuidPlayers.remove(oldUUID);
-		uuidPlayers.put(newUUID, player);
-	}
-
 	public ProgressFuture<PacketOutLobbyServer> getLobbies(GameRequest... games) {
 		PacketInLobbyServerRequest q = new PacketInLobbyServerRequest(games);
 		handle.writePacket(q);
@@ -202,7 +197,7 @@ public class ClientWrapper {
 
 	public ProgressFuture<Skin> getSkin(String player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID,new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, player, null)});
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.NAME, player, null,-1)});
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
 			@Override
@@ -221,7 +216,7 @@ public class ClientWrapper {
 		UUID requestUUID = UUID.randomUUID();
 		PacketSkinRequest.SkinRequest[] requests = new PacketSkinRequest.SkinRequest[players.length];
 		for(int i = 0;i<requests.length;i++){
-			requests[i] = new PacketSkinRequest.SkinRequest(Type.NAME, players[i], null);
+			requests[i] = new PacketSkinRequest.SkinRequest(Type.NAME, players[i], null,-1);
 		}
 		PacketSkinRequest r = new PacketSkinRequest(requestUUID,requests);
 		handle.writePacket(r);
@@ -240,7 +235,7 @@ public class ClientWrapper {
 		UUID requestUUID = UUID.randomUUID();
 		PacketSkinRequest.SkinRequest[] requests = new PacketSkinRequest.SkinRequest[players.length];
 		for(int i = 0;i<requests.length;i++){
-			requests[i] = new PacketSkinRequest.SkinRequest(Type.UUID, null, players[i]);
+			requests[i] = new PacketSkinRequest.SkinRequest(Type.UUID, null, players[i],-1);
 		}
 		PacketSkinRequest r = new PacketSkinRequest(requestUUID,requests);
 		handle.writePacket(r);
@@ -257,7 +252,7 @@ public class ClientWrapper {
 	
 	public ProgressFuture<Skin> getSkin(UUID player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.UUID, null, player)});
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.UUID, null, player,-1)});
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
 			@Override

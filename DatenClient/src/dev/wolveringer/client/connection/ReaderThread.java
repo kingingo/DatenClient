@@ -60,7 +60,12 @@ public class ReaderThread {
 		in.read(bbuffer);
 		DataBuffer buffer = new DataBuffer(bbuffer);
 		Packet packet = Packet.createPacket(buffer.readInt(), buffer,PacketDirection.TO_CLIENT);
-		client.getHandlerBoss().handle(packet);
+		try{
+			client.getHandlerBoss().handle(packet);	
+		}catch(Exception e){
+			System.out.println("Error while handeling packet "+packet);
+			e.printStackTrace();
+		}
 	}
 
 	public void start() {

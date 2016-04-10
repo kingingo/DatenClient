@@ -210,7 +210,7 @@ class TClient {
 			}
 			
 			@Override
-			public void kickPlayer(UUID player, String message) {
+			public void kickPlayer(int player, String message) {
 				System.out.println("["+name+"] Kickplayer: "+player+" Message: "+message);
 			}
 			
@@ -247,7 +247,7 @@ class TClient {
 			}
 
 			@Override
-			public void sendPlayer(UUID player, String server) {
+			public void sendPlayer(int player, String server) {
 				
 			}
 			

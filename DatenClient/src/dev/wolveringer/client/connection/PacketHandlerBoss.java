@@ -19,9 +19,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
-import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketPing;
-import dev.wolveringer.dataserver.protocoll.packets.PacketOutUUIDResponse.UUIDKey;
 import dev.wolveringer.dataserver.protocoll.packets.PacketPong;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction.PlayerAction;
@@ -67,7 +65,7 @@ public class PacketHandlerBoss {
 			//owner.writePacket(new PacketOutPlayerSettingsRequest(wolverindev, new Setting[]{Setting.PREMIUM_LOGIN,Setting.UUID}));
 			*/
 		}
-		else if(packet instanceof PacketOutPacketStatus){
+		if(packet instanceof PacketOutPacketStatus){
 			if(handschakeComplete == false){
 				handschakeErrors = ((PacketOutPacketStatus) packet).getErrors();
 			}
@@ -85,7 +83,7 @@ public class PacketHandlerBoss {
 			}
 			//owner.closePipeline();
 		}
-		else if(packet instanceof PacketDisconnect){
+		if(packet instanceof PacketDisconnect){
 			if(debug)
 				System.out.println("Disconnected: "+((PacketDisconnect)packet).getReson());
 			if(handschakeComplete == false){
@@ -93,23 +91,13 @@ public class PacketHandlerBoss {
 			}
 			owner.closePipeline();
 		}
-		else if(packet instanceof PacketOutPlayerSettings){
+		if(packet instanceof PacketOutPlayerSettings){
 			if(debug){
 				System.out.println("Player settings for: "+((PacketOutPlayerSettings)packet).getPlayer());
 				for(SettingValue s : ((PacketOutPlayerSettings) packet).getValues())
 					System.out.println("   "+s.getSetting()+" -> "+s.getValue());
 			}
 		}
-		else if(packet instanceof PacketOutUUIDResponse){
-			if(debug){
-				System.out.println("UUID response");
-				for(UUIDKey k : ((PacketOutUUIDResponse)packet).getUuids())
-					System.out.println(k.getName()+" - "+k.getUuid());
-			}
-		}
-		else
-			if(debug)
-				System.out.println("Handle: "+packet);
 		if(packet instanceof PacketServerAction){
 			System.out.println("Player server action not implimted yet!");
 			for(PlayerAction a : ((PacketServerAction) packet).getActions()){
