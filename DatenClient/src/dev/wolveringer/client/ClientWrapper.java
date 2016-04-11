@@ -32,6 +32,8 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutTopTen;
 import dev.wolveringer.dataserver.protocoll.packets.PacketPlayerIdRequest;
 import dev.wolveringer.skin.Skin;
 import dev.wolveringer.skin.SteveSkin;
+import dev.wolveringer.translation.TranslationManager;
+import lombok.Getter;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
@@ -41,9 +43,12 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 public class ClientWrapper {
 	protected Client handle;
 	private ArrayList<LoadedPlayer> players = new ArrayList<LoadedPlayer>();
-
+	@Getter
+	private TranslationManager translationManager;
+	
 	public ClientWrapper(Client handle) {
 		this.handle = handle;
+		this.translationManager = new TranslationManager(this);
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> writePacket(Packet packet) {
@@ -53,8 +58,9 @@ public class ClientWrapper {
 	@Deprecated
 	public LoadedPlayer getPlayer(String name) {
 		for(LoadedPlayer player : players)
-			if(player.getName().equalsIgnoreCase(name))
-				return player;
+			if(player.getName() != null)
+				if(player.getName().equalsIgnoreCase(name))
+					return player;
 		LoadedPlayer player = new LoadedPlayer(this, name);
 		players.add(player);
 		return player;
@@ -63,8 +69,9 @@ public class ClientWrapper {
 	@Deprecated
 	public LoadedPlayer getPlayer(UUID uuid) {
 		for(LoadedPlayer player : players)
-			if(player.getUUID().equals(uuid))
-				return player;
+			if(player.getUUID() != null)
+				if(player.getUUID().equals(uuid))
+					return player;
 		LoadedPlayer player = new LoadedPlayer(this, uuid);
 		players.add(player);
 		return player;

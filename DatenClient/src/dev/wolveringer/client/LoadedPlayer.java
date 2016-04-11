@@ -64,12 +64,10 @@ public class LoadedPlayer {
 	}
 
 	protected void load() {
-		if (!loaded)
-			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		int[] idResponse = null;
-		if(name == null)
+		if(name != null)
 			idResponse = handle.getPlayerIds(name).getSync();
-		else if(uuid == null)
+		else if(uuid != null)
 			idResponse = handle.getPlayerIds(uuid).getSync();
 		else if(playerId != -1)
 			idResponse = new int[]{playerId};
@@ -78,7 +76,6 @@ public class LoadedPlayer {
 		if(idResponse == null || idResponse.length < 1)
 			throw new RuntimeException("cant load player! Response == null");
 		playerId = idResponse[0];
-		
 		ArrayList<Setting> needed = new ArrayList<>();
 		if(uuid == null)
 			needed.add(Setting.UUID);
@@ -95,6 +92,7 @@ public class LoadedPlayer {
 			default:
 				break;
 			}
+		loaded = true;
 	}
 
 	public String getName() {
@@ -158,10 +156,8 @@ public class LoadedPlayer {
 	}
 	
 	public SettingsResponseFuture getSettings(Setting... settings) {
-		if (!loaded)
-			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		Packet packet = new PacketInPlayerSettingsRequest(playerId, settings);
-		SettingsResponseFuture future = new SettingsResponseFuture(handle.handle, packet, getUUID());
+		SettingsResponseFuture future = new SettingsResponseFuture(handle.handle, packet, playerId);
 		handle.handle.writePacket(packet);
 		return future;
 	}

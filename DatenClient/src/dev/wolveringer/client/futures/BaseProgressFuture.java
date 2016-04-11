@@ -9,18 +9,20 @@ public abstract class BaseProgressFuture<T> implements ProgressFuture<T>{
 	private int timeout = 5000;
 	private int sleep = 25;
 	private T response = null;
+	private boolean haveResponse;
 	private PacketHandleErrorException exception;
 	
 	
 	protected void done(T response) {
 		this.response = response;
+		this.haveResponse = true;
 	}
 	protected void done(PacketHandleErrorException e) {
 		this.exception = e;
 	}
 
 	public boolean haveResponse() {
-		return response != null;
+		return haveResponse;
 	}
 
 	public T getSync() {
@@ -37,7 +39,7 @@ public abstract class BaseProgressFuture<T> implements ProgressFuture<T>{
 
 	public T getSyncSave(int timeout) throws PacketHandleErrorException {
 		long start = System.currentTimeMillis();
-		while (response == null) {
+		while (!haveResponse) {
 			if(exception != null)
 				throw exception;
 			try {

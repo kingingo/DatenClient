@@ -8,15 +8,17 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerSettings.SettingValue;
 
 public class SettingsResponseFuture extends PacketResponseFuture<SettingValue[]>{
-	private UUID player;
+	private int player;
 	
-	public SettingsResponseFuture(Client client,Packet handeling,UUID player) {
+	public SettingsResponseFuture(Client client,Packet handeling,int player) {
 		super(client,handeling);
 		this.player = player;
 	}
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketOutPlayerSettings && ((PacketOutPlayerSettings) packet).getPlayer().equals(player))
-			done(((PacketOutPlayerSettings) packet).getValues());
+		if(packet instanceof PacketOutPlayerSettings){
+			if(((PacketOutPlayerSettings) packet).getPlayer() == player)
+				done(((PacketOutPlayerSettings) packet).getValues());
+		}
 	}
 }
