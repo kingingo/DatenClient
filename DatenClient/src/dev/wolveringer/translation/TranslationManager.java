@@ -12,9 +12,10 @@ import dev.wolveringer.dataserver.player.LanguageType;
 import dev.wolveringer.hashmaps.CachedHashMap;
 
 public class TranslationManager {
-	public static final File languageDir = new File("languages/"); 
+	public static File languageDir = new File("languages/"); 
 	
-	static {
+	public static void setLanguageDirectory(File dir){
+		languageDir = dir;
 		languageDir.mkdirs();
 	}
 	
@@ -23,6 +24,7 @@ public class TranslationManager {
 	private CachedHashMap<LoadedPlayer, LanguageType> languages = new CachedHashMap<>(4, TimeUnit.HOURS);
 	
 	public TranslationManager(ClientWrapper handle) {
+		languageDir.mkdirs();
 		this.handle = handle;
 		for(LanguageType t : LanguageType.values())
 			translations.put(t, new TranslationFile(t, this.handle));
