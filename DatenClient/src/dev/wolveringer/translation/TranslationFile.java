@@ -193,4 +193,10 @@ public class TranslationFile {
 	public String getTranslation(String key){
 		return translations.get(key);
 	}
+	
+	public double computeRelativeTranslatedTexts(LanguageType other){
+		if(handle.getTranslationManager().getTranslationFile(language) == null)
+			return -1D;
+		return (double)translations.size()/ (double)handle.getTranslationManager().getTranslationFile(language).translations.size()*100D;
+	}
 }

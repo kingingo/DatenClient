@@ -82,4 +82,8 @@ public class TranslationManager {
 		}
 		return type;
 	}
+	
+	public TranslationFile getTranslationFile(LanguageType lang){
+		return translations.get(lang);
+	}
 }
