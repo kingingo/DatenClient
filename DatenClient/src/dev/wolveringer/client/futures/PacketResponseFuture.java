@@ -24,8 +24,8 @@ public abstract class PacketResponseFuture<T> extends BaseProgressFuture<T> impl
 	
 	@Override
 	protected void done(T response) {
-		client.getHandlerBoss().removeListener(this);
 		super.done(response);
+		client.getHandlerBoss().removeListener(this);
 	}
 	@Override
 	protected void done(PacketHandleErrorException e) {

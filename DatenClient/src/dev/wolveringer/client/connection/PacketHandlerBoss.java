@@ -48,11 +48,16 @@ public class PacketHandlerBoss {
 		this.listener.remove(listener);
 	}
 	
+	protected void reset(){
+		handschakeComplete = false;
+		handschakeErrors = null;
+		handschakeDisconnect = null;
+	}
+	
 	protected void handle(Packet packet) {
 		if(packet instanceof PacketOutHandschakeAccept){
 			handschakeComplete = true;
 			owner.getExternalHandler().connected();
-			System.out.println("Connected to Server");
 			//owner.writePacket(new PacketOutConnectionStatus("WolverinDEV", Status.CONNECTED));
 			/*
 			UUID wolverindev = UUID.fromString("a8de450b-6853-3d1a-88ed-72bc2f08dfcd"); //Offline: a8de450b-6853-3d1a-88ed-72bc2f08dfcd Online: 57091d6f-839f-48b7-a4b1-4474222d4ad1
@@ -99,7 +104,6 @@ public class PacketHandlerBoss {
 			}
 		}
 		if(packet instanceof PacketServerAction){
-			System.out.println("Player server action not implimted yet!");
 			for(PlayerAction a : ((PacketServerAction) packet).getActions()){
 				switch (a.getAction()) {
 				case KICK:
@@ -110,6 +114,9 @@ public class PacketHandlerBoss {
 						System.out.println("Player sending not supported");
 					else
 						((BungeeCordActionListener)owner.getExternalHandler()).sendPlayer(a.getPlayer(), a.getValue());
+					break;
+				case RESTART:
+					owner.getExternalHandler().restart(a.getValue());
 					break;
 				default:
 					break;

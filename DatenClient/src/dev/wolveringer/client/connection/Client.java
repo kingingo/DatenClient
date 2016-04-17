@@ -3,6 +3,7 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.UUID;
 
 import javax.management.RuntimeErrorException;
 
@@ -77,10 +78,11 @@ public class Client {
 	public void connect(byte[] password) throws Exception {
 		if (isConnected())
 			throw new RuntimeException("Client alredy connected!");
+		if(this.boss == null)
+			this.boss = new PacketHandlerBoss(this);
 		this.socket = new Socket(target.getAddress(), target.getPort());
 		this.writer = new SocketWriter(this, socket.getOutputStream());
 		this.reader = new ReaderThread(this, socket.getInputStream());
-		this.boss = new PacketHandlerBoss(this);
 		this.timeOut = new TimeOutThread(this);
 		this.infoSender = new ServerStatusSender(this, infoHandler);
 		this.reader.start();
@@ -141,7 +143,8 @@ public class Client {
 		infoSender = null;
 		lastPingTime = -1;
 		lastPing = -1;
-		boss.handschakeComplete = false;
+		//boss.handschakeComplete = false;
+		boss.reset();
 	}
 
 	public ProgressFuture<Error[]> writePacket(Packet packet) {
@@ -151,7 +154,7 @@ public class Client {
 
 	}
 
-	private void writePacket0(Packet packet) {
+	private synchronized void writePacket0(Packet packet) {
 		try {
 			writer.write(packet);
 		} catch (IOException e) {

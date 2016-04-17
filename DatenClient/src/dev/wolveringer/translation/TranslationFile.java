@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.function.BiFunction;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -195,8 +197,14 @@ public class TranslationFile {
 	}
 	
 	public double computeRelativeTranslatedTexts(LanguageType other){
-		if(handle.getTranslationManager().getTranslationFile(language) == null)
+		if(handle.getTranslationManager().getTranslationFile(other) == null)
 			return -1D;
-		return (double)translations.size()/ (double)handle.getTranslationManager().getTranslationFile(language).translations.size()*100D;
+		int translated = 0;
+		for(Entry<String, String> e : translations.entrySet()){
+			if(e.getKey() != null && e.getValue() != null)
+				if(!e.getValue().equalsIgnoreCase(handle.getTranslationManager().getTranslationFile(other).translations.get(e.getKey())))
+					translated++;
+		}
+		return (double)translated/ (double)handle.getTranslationManager().getTranslationFile(other).translations.size()*100D;
 	}
 }

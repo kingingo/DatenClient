@@ -16,4 +16,6 @@ public interface ActionListener {
 	public void serverMessage(String channel,DataBuffer buffer);
 	
 	public void settingUpdate(UUID player,Setting setting,String value);
+	
+	public void restart(String kickMessage);
 }

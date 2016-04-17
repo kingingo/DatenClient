@@ -77,10 +77,12 @@ public class LoadedPlayer {
 			throw new RuntimeException("cant load player! Response == null");
 		playerId = idResponse[0];
 		ArrayList<Setting> needed = new ArrayList<>();
-		if(uuid == null)
-			needed.add(Setting.UUID);
-		if(name == null)
-			needed.add(Setting.NAME);
+		needed.add(Setting.UUID);
+		needed.add(Setting.NAME);
+		if(needed.size() == 0){
+			loaded = true;
+			return;
+		}
 		SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
 		for(SettingValue v : values)
 			switch (v.getSetting()) {

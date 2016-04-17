@@ -51,21 +51,26 @@ public class ReaderThread {
 	}
 
 	private void readPacket() throws IOException {
-		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read() << 0) & 0x000000ff;
+		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read()) & 0x000000ff;
 		if (length <= 0) {
 			System.out.println("Reader index wrong (Wrong length)");
 			return;
 		}
 		byte[] bbuffer = new byte[length];
-		in.read(bbuffer);
+		for(int i = 0;i<bbuffer.length;i++)
+			bbuffer[i] = (byte) in.read();
 		DataBuffer buffer = new DataBuffer(bbuffer);
-		Packet packet = Packet.createPacket(buffer.readInt(), buffer,PacketDirection.TO_CLIENT);
-		try{
-			client.getHandlerBoss().handle(packet);	
-		}catch(Exception e){
-			System.out.println("Error while handeling packet "+packet);
-			e.printStackTrace();
-		}
+		ThreadFactory.getFactory().createThread(new Runnable() {
+			public void run() {
+				Packet packet = Packet.createPacket(buffer.readInt(), buffer,PacketDirection.TO_CLIENT);
+				try{
+					client.getHandlerBoss().handle(packet);	
+				}catch(Exception e){
+					System.out.println("Error while handeling packet "+packet);
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 
 	public void start() {

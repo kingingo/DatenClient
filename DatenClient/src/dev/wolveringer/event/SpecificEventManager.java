@@ -67,12 +67,14 @@ public class SpecificEventManager {
 	
 	public void setEventEnabled(boolean enabled) {
 		this.enabled = enabled; //TODO sync with datenserver!
-		this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()));
+		if(handle.getHandle().isConnected())
+			this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()));
 	}
 	
 	public void setEventEnabled(boolean enabled,boolean sync) {
 		this.enabled = enabled; //TODO sync with datenserver!
-		this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()),sync);
+		if(handle.getHandle().isConnected())
+			this.handle.writePacket(new PacketEventTypeSettings(type, enabled, getAllActiveConditions()),sync);
 	}
 	
 	public boolean isEventEnabled() {
@@ -109,7 +111,8 @@ public class SpecificEventManager {
 	
 	protected void updateEventCondition(ToggleableEventCondition condition){
 		System.out.println("Condition updated: "+condition.getCondition().getCondition()+" Active: "+condition.isActive());
-		handle.writePacket(new PacketEventCondition(type, condition.getCondition().getCondition(), condition.active,condition.getCondition()));
+		if(handle.getHandle().isConnected())
+			handle.writePacket(new PacketEventCondition(type, condition.getCondition().getCondition(), condition.active,condition.getCondition()));
 	}
 
 	public void updateAll() {

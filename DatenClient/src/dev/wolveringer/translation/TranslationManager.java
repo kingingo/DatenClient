@@ -32,8 +32,8 @@ public class TranslationManager {
 	
 	public void updateTranslations(){
 		for(TranslationFile f : translations.values())
-			if(f.checkUpdate().getSync())
-				f.updateLanguage();
+				if(f.checkUpdate().getSync())
+					f.updateLanguage();
 	}
 	
 	public String translate(String key,Object...args){
@@ -68,7 +68,7 @@ public class TranslationManager {
 			System.out.println("Missing translation ["+key+","+lang.getShortName()+"]");
 			translation = "<missing translation "+key+">";
 		}
-		return translation;
+		return translation.replaceAll("\\\\n", "\n");
 	}
 	private String formatTranslation(String in,Object[] args){
 		for(int i = 0;i<args.length;i++)

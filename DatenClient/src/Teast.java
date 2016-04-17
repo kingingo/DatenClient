@@ -250,6 +250,11 @@ class TClient {
 			public void sendPlayer(int player, String server) {
 				
 			}
+
+			@Override
+			public void restart(String kickMessage) {
+				
+			}
 			
 		},new ServerInformations() {
 			@Override
