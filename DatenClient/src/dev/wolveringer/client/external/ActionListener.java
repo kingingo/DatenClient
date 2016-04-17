@@ -18,4 +18,5 @@ public interface ActionListener {
 	public void settingUpdate(UUID player,Setting setting,String value);
 	
 	public void restart(String kickMessage);
+	public void stop(String kickMessage);
 }

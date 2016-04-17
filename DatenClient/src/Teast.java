@@ -255,6 +255,12 @@ class TClient {
 			public void restart(String kickMessage) {
 				
 			}
+
+			@Override
+			public void stop(String kickMessage) {
+				// TODO Auto-generated method stub
+				
+			}
 			
 		},new ServerInformations() {
 			@Override
