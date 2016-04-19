@@ -2,7 +2,9 @@ package dev.wolveringer.client;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import dev.wolveringer.arrays.CachedArrayList;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
@@ -42,7 +44,11 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
 
 public class ClientWrapper {
 	protected Client handle;
-	private ArrayList<LoadedPlayer> players = new ArrayList<LoadedPlayer>();
+	private static CachedArrayList<LoadedPlayer> players = new CachedArrayList<LoadedPlayer>(20,TimeUnit.MINUTES);
+	
+	public static void unloadAllPlayers(){
+		players.clear();
+	}
 	@Getter
 	private TranslationManager translationManager;
 	
@@ -57,10 +63,12 @@ public class ClientWrapper {
 
 	@Deprecated
 	public LoadedPlayer getPlayer(String name) {
-		for(LoadedPlayer player : players)
+		for(LoadedPlayer player : new ArrayList<>(players))
 			if(player.getName() != null)
-				if(player.getName().equalsIgnoreCase(name))
+				if(player.getName().equalsIgnoreCase(name)){
+					players.resetTime(player);
 					return player;
+				}
 		LoadedPlayer player = new LoadedPlayer(this, name);
 		players.add(player);
 		return player;
@@ -68,19 +76,23 @@ public class ClientWrapper {
 
 	@Deprecated
 	public LoadedPlayer getPlayer(UUID uuid) {
-		for(LoadedPlayer player : players)
+		for(LoadedPlayer player : new ArrayList<>(players))
 			if(player.getUUID() != null)
-				if(player.getUUID().equals(uuid))
+				if(player.getUUID().equals(uuid)){
+					players.resetTime(player);
 					return player;
+				}
 		LoadedPlayer player = new LoadedPlayer(this, uuid);
 		players.add(player);
 		return player;
 	}
 
 	public LoadedPlayer getPlayer(int id) {
-		for(LoadedPlayer player : players)
-			if(player.getPlayerId() == id)
+		for(LoadedPlayer player : new ArrayList<>(players))
+			if(player.getPlayerId() == id){
+				players.resetTime(player);
 				return player;
+			}
 		LoadedPlayer player = new LoadedPlayer(this, id);
 		players.add(player);
 		return player;

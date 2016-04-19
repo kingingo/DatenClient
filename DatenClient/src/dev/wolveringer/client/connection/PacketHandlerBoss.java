@@ -118,6 +118,9 @@ public class PacketHandlerBoss {
 				case RESTART:
 					owner.getExternalHandler().restart(a.getValue());
 					break;
+				case STOP:
+					owner.getExternalHandler().stop(a.getValue());
+					break;
 				default:
 					break;
 				}
@@ -166,7 +169,10 @@ public class PacketHandlerBoss {
 			Packet pack = ((PacketForward) packet).getPacket();
 			if(pack != null)
 				for(PacketListener l : new ArrayList<>(listener))
-					l.handle(pack);
+					if(l != null)
+						l.handle(pack);
+					else
+						listener.remove(null);
 		}
 		else
 			for(PacketListener l : new ArrayList<>(listener))

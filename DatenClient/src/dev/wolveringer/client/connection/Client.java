@@ -9,6 +9,7 @@ import javax.management.RuntimeErrorException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.client.external.ActionListener;
 import dev.wolveringer.client.external.BungeeCordActionListener;
@@ -108,6 +109,7 @@ public class Client {
 				throw new RuntimeException("Handschake needs longer than 5000ms");
 			}
 		}
+		ClientWrapper.unloadAllPlayers();
 		timeOut.start();
 		infoSender.start();
 		eventManager.updateAll();
