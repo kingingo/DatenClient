@@ -42,6 +42,8 @@ public class PacketHandlerBoss {
 	}
 
 	public void addListener(PacketListener listener){
+		if(listener == null)
+			throw new NullPointerException("Listener cant be null!");
 		this.listener.add(listener);
 	}
 	public void removeListener(PacketListener listener){
@@ -176,7 +178,8 @@ public class PacketHandlerBoss {
 		}
 		else
 			for(PacketListener l : new ArrayList<>(listener))
-				l.handle(packet);
+				if(l != null)
+					l.handle(packet);
 		if(!handschakeComplete)
 			return;
 	}
