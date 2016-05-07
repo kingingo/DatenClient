@@ -5,10 +5,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class BukkitPlugin extends JavaPlugin{
 
 	public void onEnable(){ 
-		System.out.println("[DatenClient]: enabled!");
+		System.out.println("Datenclient class loaded");
 	}
 	
 	public void onDisable(){
-		System.out.println("[DatenClient]: disabled!");
+		System.out.println("Unloading Datenclient");
 	}
 }

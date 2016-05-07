@@ -50,6 +50,16 @@ public class LoadedPlayer {
 
 	private boolean loaded;
 
+	public void setName(String name) {
+		this.name = name;
+	}
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
+	}
+	
 	protected LoadedPlayer(ClientWrapper client, String name) {
 		this.name = name;
 		this.handle = client;
@@ -72,7 +82,7 @@ public class LoadedPlayer {
 		else if(playerId != -1)
 			idResponse = new int[]{playerId};
 		else
-			throw new NullPointerException("Cant load player without informations");
+			throw new NullPointerException("Cant load player without informations. this -> Name: "+name+", uuid: "+uuid+", playerId: "+playerId);
 		if(idResponse == null || idResponse.length < 1)
 			throw new RuntimeException("cant load player! Response == null");
 		playerId = idResponse[0];
@@ -206,7 +216,7 @@ public class LoadedPlayer {
 
 	public ServerResponseFurure getServer() {
 		PacketInGetServer p = new PacketInGetServer(playerId);
-		ServerResponseFurure f = new ServerResponseFurure(handle.handle, p, uuid);
+		ServerResponseFurure f = new ServerResponseFurure(handle.handle, p, playerId);
 		handle.handle.writePacket(p);
 		return f;
 	}

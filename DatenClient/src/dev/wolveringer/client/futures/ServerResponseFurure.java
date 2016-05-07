@@ -7,16 +7,16 @@ import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPlayerServer;
 
 public class ServerResponseFurure extends PacketResponseFuture<String>{
-	private UUID player;
+	private int player;
 	
-	public ServerResponseFurure(Client client,Packet handeling,UUID player) {
+	public ServerResponseFurure(Client client,Packet handeling,int player) {
 		super(client,handeling);
 		this.player = player;
 	}
 	
 	@Override
 	public void handlePacket(Packet packet) {
-		if(packet instanceof PacketOutPlayerServer && ((PacketOutPlayerServer) packet).getPlayer().equals(player))
+		if(packet instanceof PacketOutPlayerServer && ((PacketOutPlayerServer) packet).getPlayer() == player)
 			done(((PacketOutPlayerServer) packet).getServer());
 	}
 }

@@ -25,12 +25,12 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-					<excludes>
 					<!-- 
+					<excludes>
 						<exclude>dev/wolveringer/client/BukkitPlugin.**</exclude>
 						<exclude>dev/wolveringer/client/BungeePlugin.**</exclude>
-					 -->
 					</excludes>
+					 -->
 				</configuration>
 			</plugin>
 			<!-- download source code in Eclipse, best practice -->

@@ -142,7 +142,7 @@ public class PacketHandlerBoss {
 					owner.getExternalHandler().brotcast(t.getPermission(), ((PacketChatMessage) packet).getMessage());
 					break;
 				case PLAYER:
-					owner.getExternalHandler().sendMessage(UUID.fromString(t.getTarget()),((PacketChatMessage) packet).getMessage());
+					owner.getExternalHandler().sendMessage(Integer.parseInt(t.getTarget()),((PacketChatMessage) packet).getMessage());
 				default:
 					break;
 				}

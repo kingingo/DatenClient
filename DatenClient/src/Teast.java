@@ -205,7 +205,7 @@ class TClient {
 		this.name = name;
 		client = Client.createBungeecordClient(name, new InetSocketAddress("localhost", 1111), new BungeeCordActionListener() {
 			@Override
-			public void sendMessage(UUID player, String message) {
+			public void sendMessage(int player, String message) {
 				System.out.println("["+name+"] Sendmessage: "+player +" Message: "+message);
 			}
 			
