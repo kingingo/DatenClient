@@ -5,8 +5,11 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import dev.wolveringer.arrays.CachedArrayList;
+import dev.wolveringer.booster.BoosterType;
+import dev.wolveringer.booster.NetworkBooster;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
+import dev.wolveringer.client.futures.BoosterResposeFuture;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.LanguageUpdateFuture;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
@@ -20,6 +23,7 @@ import dev.wolveringer.dataserver.gamestats.StatsKey;
 import dev.wolveringer.dataserver.player.LanguageType;
 import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketBoosterStatusRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType;
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
@@ -335,5 +339,15 @@ public class ClientWrapper {
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> createReport(int playerId, int target, String reson, String info) {
 		return writePacket(new PacketReportEdit(EditKey.CREATE, playerId, target, reson, info));
+	}
+	public ProgressFuture<NetworkBooster> getNetworkBooster(BoosterType type){
+		Packet p;
+		handle.writePacket(p = new PacketBoosterStatusRequest(type));
+		return new BoosterResposeFuture(handle, p, -1);
+	}
+	public ProgressFuture<NetworkBooster> getNetworkBoosterInformation(BoosterType type,int playerId){
+		Packet p;
+		handle.writePacket(p = new PacketBoosterStatusRequest(playerId, type));
+		return new BoosterResposeFuture(handle, p, -1);
 	}
 }
