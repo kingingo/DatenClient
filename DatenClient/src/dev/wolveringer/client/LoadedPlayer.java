@@ -8,6 +8,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 
+import dev.wolveringer.booster.BoosterType;
 import dev.wolveringer.client.futures.BanStatsResponseFuture;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.ServerResponseFurure;
@@ -19,6 +20,7 @@ import dev.wolveringer.dataserver.gamestats.StatsKey;
 import dev.wolveringer.dataserver.player.LanguageType;
 import dev.wolveringer.dataserver.player.Setting;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
+import dev.wolveringer.dataserver.protocoll.packets.PacketBoosterActive;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInBanPlayer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInBanStatsRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInChangePlayerSettings;
@@ -267,6 +269,12 @@ public class LoadedPlayer {
 			return handle.writePacket(new PacketSkinSet(playerId));
 		else
 			return handle.writePacket(new PacketSkinSet(playerId, skin));
+	}
+	public ProgressFuture<PacketOutPacketStatus.Error[]> activeNetworkBooster(BoosterType type,int time){
+		return handle.writePacket(new PacketBoosterActive(playerId, time, type));
+	}
+	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int seconds){
+		return setStats(new EditStats(GameType.BOOSTER, Action.ADD, StatsKey.BOOSTER_TIME, seconds));
 	}
 	public void loadPlayer() {
 		load();

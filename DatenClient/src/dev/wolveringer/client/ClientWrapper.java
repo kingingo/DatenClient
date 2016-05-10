@@ -343,11 +343,11 @@ public class ClientWrapper {
 	public ProgressFuture<NetworkBooster> getNetworkBooster(BoosterType type){
 		Packet p;
 		handle.writePacket(p = new PacketBoosterStatusRequest(type));
-		return new BoosterResposeFuture(handle, p, -1);
+		return new BoosterResposeFuture(handle, p, -1,type);
 	}
 	public ProgressFuture<NetworkBooster> getNetworkBoosterInformation(BoosterType type,int playerId){
 		Packet p;
 		handle.writePacket(p = new PacketBoosterStatusRequest(playerId, type));
-		return new BoosterResposeFuture(handle, p, -1);
+		return new BoosterResposeFuture(handle, p, -1,BoosterType.NONE);
 	}
 }
