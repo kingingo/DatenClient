@@ -273,8 +273,8 @@ public class LoadedPlayer {
 	public ProgressFuture<PacketOutPacketStatus.Error[]> activeNetworkBooster(BoosterType type,int time){
 		return handle.writePacket(new PacketBoosterActive(playerId, time, type));
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int seconds){
-		return setStats(new EditStats(GameType.BOOSTER, Action.ADD, StatsKey.BOOSTER_TIME, seconds));
+	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int millis){
+		return setStats(new EditStats(GameType.BOOSTER, Action.ADD, StatsKey.BOOSTER_TIME, millis));
 	}
 	public void loadPlayer() {
 		load();
