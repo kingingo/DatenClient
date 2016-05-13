@@ -11,19 +11,29 @@ import dev.wolveringer.dataserver.protocoll.packets.Packet.PacketDirection;
 public class SocketWriter {
 	private Client owner;
 	private OutputStream out;
-
+	private int write;
+	private long lastWrite = -1;
 	public SocketWriter(Client owner, OutputStream os) {
 		this.owner = owner;
 		this.out = os;
 	}
 
-	public void write(Packet packet) throws IOException {
+	public synchronized void write(Packet packet) throws IOException {
 		int id = Packet.getPacketId(packet,PacketDirection.TO_SERVER);
 		if (id == -1) {
 			System.out.println("Cant find Packet: " + packet);
 			return;
 		}
 
+		if(lastWrite+1000>System.currentTimeMillis()){
+			if(write > 100){
+				System.err.println("Writing more than 100 packets/sec! (Curruntly: "+write+")");
+			}
+			lastWrite = System.currentTimeMillis();
+			write = 0;
+		}
+		
+		write++;
 		DataBuffer dbuffer = new DataBuffer();
 		dbuffer.writeInt(id);
 		dbuffer.writeUUID(packet.getPacketUUID());

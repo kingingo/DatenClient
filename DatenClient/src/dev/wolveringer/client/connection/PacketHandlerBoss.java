@@ -2,10 +2,10 @@ package dev.wolveringer.client.connection;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
+import dev.wolveringer.client.futures.PacketResponseFuture;
 import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
@@ -54,23 +54,15 @@ public class PacketHandlerBoss {
 		handschakeComplete = false;
 		handschakeErrors = null;
 		handschakeDisconnect = null;
+		for(PacketListener l : new ArrayList<>(listener))
+			if(l instanceof PacketResponseFuture)
+				listener.remove(l);
 	}
 	
 	protected void handle(Packet packet) {
 		if(packet instanceof PacketOutHandschakeAccept){
 			handschakeComplete = true;
 			owner.getExternalHandler().connected();
-			//owner.writePacket(new PacketOutConnectionStatus("WolverinDEV", Status.CONNECTED));
-			/*
-			UUID wolverindev = UUID.fromString("a8de450b-6853-3d1a-88ed-72bc2f08dfcd"); //Offline: a8de450b-6853-3d1a-88ed-72bc2f08dfcd Online: 57091d6f-839f-48b7-a4b1-4474222d4ad1
-			owner.writePacket(new PacketOutUUIDRequest(new String[]{"WolverinDEV"}));
-			//owner.writePacket(new PacketOutPlayerSettingsRequest(wolverindev, new Setting[]{Setting.PREMIUM_LOGIN,Setting.UUID}));
-			
-			//owner.writePacket(new PacketOutChangePlayerSettings(wolverindev, Setting.PREMIUM_LOGIN, true+""));
-			owner.writePacket(new PacketOutUUIDRequest(new String[]{"WolverinDEV"}));
-			//owner.writePacket(new PacketOutPlayerSettingsRequest(wolverindev, new Setting[]{Setting.PREMIUM_LOGIN,Setting.UUID}));
-			//owner.writePacket(new PacketOutPlayerSettingsRequest(wolverindev, new Setting[]{Setting.PREMIUM_LOGIN,Setting.UUID}));
-			*/
 		}
 		if(packet instanceof PacketOutPacketStatus){
 			if(handschakeComplete == false){
