@@ -114,7 +114,6 @@ public class ClientWrapper {
 	public LoadedPlayer getPlayerAndLoad(String name) {
 		LoadedPlayer player = getPlayer(name);
 		if (!player.isLoaded()) {
-			player.setName(name);
 			player.load();
 		}
 		return player;
@@ -123,7 +122,6 @@ public class ClientWrapper {
 	public LoadedPlayer getPlayerAndLoad(UUID uuid) {
 		LoadedPlayer player = getPlayer(uuid);
 		if (!player.isLoaded()) {
-			player.setUuid(uuid);
 			player.load();
 		}
 		return player;
@@ -132,7 +130,6 @@ public class ClientWrapper {
 	public LoadedPlayer getPlayerAndLoad(int id) {
 		LoadedPlayer player = getPlayer(id);
 		if (!player.isLoaded()) {
-			player.setPlayerId(id);
 			player.load();
 		}
 		return player;

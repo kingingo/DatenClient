@@ -51,7 +51,8 @@ public class LoadedPlayer {
 	private ClientWrapper handle;
 
 	private boolean loaded;
-
+	@Getter
+	private boolean isLoading;
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -75,37 +76,47 @@ public class LoadedPlayer {
 		this.handle = client;
 	}
 
-	protected void load() {
-		int[] idResponse = null;
-		if(name != null)
-			idResponse = handle.getPlayerIds(name).getSync();
-		else if(uuid != null)
-			idResponse = handle.getPlayerIds(uuid).getSync();
-		else if(playerId != -1)
-			idResponse = new int[]{playerId};
-		else
-			throw new NullPointerException("Cant load player without informations. this -> Name: "+name+", uuid: "+uuid+", playerId: "+playerId);
-		if(idResponse == null || idResponse.length < 1)
-			throw new RuntimeException("cant load player! Response == null");
-		playerId = idResponse[0];
-		ArrayList<Setting> needed = new ArrayList<>();
-		needed.add(Setting.UUID);
-		needed.add(Setting.NAME);
-		if(needed.size() == 0){
-			loaded = true;
+	protected synchronized void load() {
+		if(isLoading || loaded)
 			return;
-		}
-		SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
-		for(SettingValue v : values)
-			switch (v.getSetting()) {
-			case NAME:
-				name = v.getValue();
-				break;
-			case UUID:
-				uuid = UUID.fromString(v.getValue());
-			default:
-				break;
+		isLoading = true;
+		try{
+			int[] idResponse = null;
+			if(name != null)
+				idResponse = handle.getPlayerIds(name).getSync();
+			else if(uuid != null)
+				idResponse = handle.getPlayerIds(uuid).getSync();
+			else if(playerId != -1)
+				idResponse = new int[]{playerId};
+			else{
+				isLoading = false;
+				throw new NullPointerException("Cant load player without informations. this -> Name: "+name+", uuid: "+uuid+", playerId: "+playerId);
 			}
+			if(idResponse == null || idResponse.length < 1){
+				isLoading = false;
+				throw new RuntimeException("cant load player! Response == null");
+			}
+			playerId = idResponse[0];
+			ArrayList<Setting> needed = new ArrayList<>();
+			needed.add(Setting.UUID);
+			needed.add(Setting.NAME);
+			SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
+			for(SettingValue v : values)
+				switch (v.getSetting()) {
+				case NAME:
+					name = v.getValue();
+					break;
+				case UUID:
+					uuid = UUID.fromString(v.getValue());
+				default:
+					break;
+				}
+		}catch(Exception e){
+			isLoading = false;
+			loaded = false;
+			throw e;
+		}
+		isLoading = false;
 		loaded = true;
 	}
 

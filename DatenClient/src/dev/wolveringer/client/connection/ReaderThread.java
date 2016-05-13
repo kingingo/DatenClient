@@ -50,7 +50,7 @@ public class ReaderThread {
 		});
 	}
 
-	private void readPacket() throws IOException {
+	private synchronized void readPacket() throws IOException {
 		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read()) & 0x000000ff;
 		if (length <= 0) {
 			System.out.println("Reader index wrong (Wrong length)");
