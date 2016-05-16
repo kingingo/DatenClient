@@ -44,7 +44,7 @@ public class Client {
 	private SocketWriter writer;
 	private PacketHandlerBoss boss;
 
-	protected String host = "underknown";
+	protected String host = "unknown";
 	@Getter
 	protected String name;
 
