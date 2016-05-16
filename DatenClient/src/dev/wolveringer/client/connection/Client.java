@@ -58,6 +58,7 @@ public class Client {
 
 	protected boolean connected = false;
 
+	@Getter
 	protected ServerStatusSender infoSender;
 	private ServerInformations infoHandler;
 
