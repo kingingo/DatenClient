@@ -338,8 +338,8 @@ public class ClientWrapper {
 		return writePacket(new PacketReportEdit(EditKey.CREATE, playerId, target, reson, info));
 	}
 	public ProgressFuture<NetworkBooster> getNetworkBooster(BoosterType type){
-		Packet p;
-		handle.writePacket(p = new PacketBoosterStatusRequest(type));
+		Packet p = new PacketBoosterStatusRequest(type);
+		handle.writePacket(p);
 		return new BoosterResposeFuture(handle, p, -1,type);
 	}
 	public ProgressFuture<NetworkBooster> getNetworkBoosterInformation(BoosterType type,int playerId){
