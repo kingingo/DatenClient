@@ -103,7 +103,7 @@ public class Client {
 			}
 			if (start + timeout < System.currentTimeMillis()){
 				disconnect();
-				throw new RuntimeException("Handschake needs longer than 5000ms");
+				throw new RuntimeException("Handshake needs longer than 5000ms");
 			}
 		}
 		ClientWrapper.unloadAllPlayers();

@@ -148,11 +148,14 @@ public class ClientWrapper {
 		return players;
 	}
 
-	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server) {
+	public ServerStatusResponseFuture getServerStatus(
+			dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server) {
 		return getServerStatus(action, server, false);
 	}
 
-	public ServerStatusResponseFuture getServerStatus(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server, boolean player) {
+	public ServerStatusResponseFuture getServerStatus(
+			dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action action, String server,
+			boolean player) {
 		PacketInServerStatusRequest p;
 		if (action == Action.GAMETYPE)
 			throw new RuntimeException("GAMETYPE isnt an spectial server");
@@ -174,31 +177,38 @@ public class ClientWrapper {
 
 	public ServerStatusResponseFuture getGameTypeServerStatus(GameType[] types, boolean player) {
 		PacketInServerStatusRequest p;
-		writePacket(p = new PacketInServerStatusRequest(dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action.GAMETYPE, null, player, types));
+		writePacket(p = new PacketInServerStatusRequest(
+				dev.wolveringer.dataserver.protocoll.packets.PacketOutServerStatus.Action.GAMETYPE, null, player,
+				types));
 		return new ServerStatusResponseFuture(handle, p);
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> sendMessage(int playerId, String message) {
-		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] { new PacketChatMessage.Target(TargetType.PLAYER, null, playerId + "") });
+		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] {
+				new PacketChatMessage.Target(TargetType.PLAYER, null, playerId + "") });
 		return writePacket(p);
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> brotcastMessage(String permission, String message) {
-		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] { new PacketChatMessage.Target(TargetType.BROTCAST, permission, message) });
+		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] {
+				new PacketChatMessage.Target(TargetType.BROTCAST, permission, message) });
 		return writePacket(p);
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(int player, String reson) {
-		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[] { new PacketServerAction.PlayerAction(player, PacketServerAction.Action.KICK, reson) });
+		PacketServerAction action = new PacketServerAction(new PacketServerAction.PlayerAction[] {
+				new PacketServerAction.PlayerAction(player, PacketServerAction.Action.KICK, reson) });
 		return writePacket(action);
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> sendServerMessage(String target, String channel, DataBuffer buffer) {
+	public ProgressFuture<PacketOutPacketStatus.Error[]> sendServerMessage(String target, String channel,
+			DataBuffer buffer) {
 		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
 		return writePacket(packet);
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> sendServerMessage(ClientType target, String channel, DataBuffer buffer) {
+	public ProgressFuture<PacketOutPacketStatus.Error[]> sendServerMessage(ClientType target, String channel,
+			DataBuffer buffer) {
 		PacketServerMessage packet = new PacketServerMessage(channel, target, buffer);
 		return writePacket(packet);
 	}
@@ -235,7 +245,8 @@ public class ClientWrapper {
 
 	public ProgressFuture<Skin> getSkin(String player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.NAME, player, null, -1) });
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,
+				new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.NAME, player, null, -1) });
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
 			@Override
@@ -290,7 +301,8 @@ public class ClientWrapper {
 
 	public ProgressFuture<Skin> getSkin(UUID player) {
 		UUID requestUUID = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(requestUUID, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.UUID, null, player, -1) });
+		PacketSkinRequest r = new PacketSkinRequest(requestUUID,
+				new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.UUID, null, player, -1) });
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle, r, requestUUID)) {
 			@Override
@@ -307,7 +319,8 @@ public class ClientWrapper {
 
 	/**
 	 * 
-	 * @param type == null than no update found
+	 * @param type
+	 *            == null than no update found
 	 * @return
 	 */
 	public ProgressFuture<String> requestLanguageUpdate(LanguageType type, double curruntVersion) {
@@ -334,17 +347,20 @@ public class ClientWrapper {
 		return writePacket(new PacketReportEdit(EditKey.DONE_WORKER, reportId, workerId, null, null));
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> createReport(int playerId, int target, String reson, String info) {
+	public ProgressFuture<PacketOutPacketStatus.Error[]> createReport(int playerId, int target, String reson,
+			String info) {
 		return writePacket(new PacketReportEdit(EditKey.CREATE, playerId, target, reson, info));
 	}
-	public ProgressFuture<NetworkBooster> getNetworkBooster(BoosterType type){
+
+	public ProgressFuture<NetworkBooster> getNetworkBooster(BoosterType type) {
 		Packet p = new PacketBoosterStatusRequest(type);
 		handle.writePacket(p);
-		return new BoosterResposeFuture(handle, p, -1,type);
+		return new BoosterResposeFuture(handle, p, -1, type);
 	}
-	public ProgressFuture<NetworkBooster> getNetworkBoosterInformation(BoosterType type,int playerId){
+
+	public ProgressFuture<NetworkBooster> getNetworkBoosterInformation(BoosterType type, int playerId) {
 		Packet p;
 		handle.writePacket(p = new PacketBoosterStatusRequest(playerId, type));
-		return new BoosterResposeFuture(handle, p, -1,BoosterType.NONE);
+		return new BoosterResposeFuture(handle, p, -1, BoosterType.NONE);
 	}
 }
