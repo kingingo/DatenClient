@@ -158,7 +158,7 @@ public class ClientWrapper {
 			boolean player) {
 		PacketInServerStatusRequest p;
 		if (action == Action.GAMETYPE)
-			throw new RuntimeException("GAMETYPE isnt an spectial server");
+			throw new RuntimeException("GAMETYPE isnt an special server");
 		writePacket(p = new PacketInServerStatusRequest(action, server, player, null));
 		return new ServerStatusResponseFuture(handle, p);
 	}
@@ -189,7 +189,7 @@ public class ClientWrapper {
 		return writePacket(p);
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> brotcastMessage(String permission, String message) {
+	public ProgressFuture<PacketOutPacketStatus.Error[]> broadcastMessage(String permission, String message) {
 		PacketChatMessage p = new PacketChatMessage(message, new PacketChatMessage.Target[] {
 				new PacketChatMessage.Target(TargetType.BROTCAST, permission, message) });
 		return writePacket(p);
