@@ -14,7 +14,7 @@ import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
-import dev.wolveringer.dataserver.protocoll.packets.PacketHandschakeInStart;
+import dev.wolveringer.dataserver.protocoll.packets.PacketHandshakeInStart;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
 import dev.wolveringer.event.EventManager;
@@ -75,7 +75,7 @@ public class Client {
 
 	public void connect(byte[] password) throws Exception {
 		if (isConnected())
-			throw new RuntimeException("Client alredy connected!");
+			throw new RuntimeException("Client already connected!");
 		if(this.boss == null)
 			this.boss = new PacketHandlerBoss(this);
 		this.socket = new Socket(target.getAddress(), target.getPort());
@@ -85,21 +85,21 @@ public class Client {
 		this.infoSender = new ServerStatusSender(this, infoHandler);
 		this.reader.start();
 		connected = true;
-		//Handschaking
-		writePacket(new PacketHandschakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
+		//Handshaking
+		writePacket(new PacketHandshakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
 		long start = System.currentTimeMillis();
-		while (!boss.handschakeComplete) {
+		while (!boss.handshakeComplete) {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 			}
-			if(boss.handschakeErrors != null){
+			if(boss.handshakeErrors != null){
 				disconnect();
-				throw new RuntimeException("Errors happend while handschaking: \n"+StringUtils.join(boss.handschakeErrors,"\n -"));
+				throw new RuntimeException("Errors happend while handshaking: \n"+StringUtils.join(boss.handshakeErrors,"\n -"));
 			}
-			if(boss.handschakeDisconnect != null){
+			if(boss.handshakeDisconnect != null){
 				disconnect();
-				throw new RuntimeException("Server denied connection. Reson: "+boss.handschakeDisconnect);
+				throw new RuntimeException("Server denied connection. Reason: "+boss.handshakeDisconnect);
 			}
 			if (start + timeout < System.currentTimeMillis()){
 				disconnect();
@@ -142,7 +142,6 @@ public class Client {
 		infoSender = null;
 		lastPingTime = -1;
 		lastPing = -1;
-		//boss.handschakeComplete = false;
 		boss.reset();
 	}
 
@@ -150,7 +149,6 @@ public class Client {
 		StatusResponseFuture f = new StatusResponseFuture(this, packet.getPacketUUID());
 		writePacket0(packet);
 		return f;
-
 	}
 
 	private synchronized void writePacket0(Packet packet) {
@@ -190,7 +188,6 @@ public class Client {
 		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01", new ServerInformations() {
 			@Override
 			public PacketInServerStatus getStatus() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 		});
@@ -208,7 +205,7 @@ public class Client {
 		infoSender.updateServerStats();
 	}
 	
-	public boolean isHandschakeCompleded(){
-		return boss == null ? false : boss.handschakeComplete;
+	public boolean isHandshakeCompleted(){
+		return boss == null ? false : boss.handshakeComplete;
 	}
 }
