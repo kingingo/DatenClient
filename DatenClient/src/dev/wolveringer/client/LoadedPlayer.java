@@ -47,52 +47,57 @@ public class LoadedPlayer {
 	private int playerId = -1;
 	private UUID uuid;
 	private String name;
-	
+
 	private ClientWrapper handle;
 
 	private boolean loaded;
 	@Getter
 	private boolean isLoading;
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public void setUuid(UUID uuid) {
 		this.uuid = uuid;
 	}
+
 	public void setPlayerId(int playerId) {
 		this.playerId = playerId;
 	}
-	
+
 	protected LoadedPlayer(ClientWrapper client, String name) {
 		this.name = name;
 		this.handle = client;
 	}
+
 	protected LoadedPlayer(ClientWrapper client, UUID uuid) {
 		this.uuid = uuid;
 		this.handle = client;
 	}
+
 	protected LoadedPlayer(ClientWrapper client, int id) {
 		this.playerId = id;
 		this.handle = client;
 	}
 
 	protected synchronized void load() {
-		if(isLoading || loaded)
+		if (isLoading || loaded)
 			return;
 		isLoading = true;
-		try{
+		try {
 			int[] idResponse = null;
-			if(name != null)
+			if (name != null)
 				idResponse = handle.getPlayerIds(name).getSync();
-			else if(uuid != null)
+			else if (uuid != null)
 				idResponse = handle.getPlayerIds(uuid).getSync();
-			else if(playerId != -1)
-				idResponse = new int[]{playerId};
-			else{
+			else if (playerId != -1)
+				idResponse = new int[] { playerId };
+			else {
 				isLoading = false;
-				throw new NullPointerException("Cant load player without informations. this -> Name: "+name+", uuid: "+uuid+", playerId: "+playerId);
+				throw new NullPointerException("Cant load player without informations. this -> Name: " + name + ", uuid: " + uuid + ", playerId: " + playerId);
 			}
-			if(idResponse == null || idResponse.length < 1){
+			if (idResponse == null || idResponse.length < 1) {
 				isLoading = false;
 				throw new RuntimeException("cant load player! Response == null");
 			}
@@ -101,7 +106,7 @@ public class LoadedPlayer {
 			needed.add(Setting.UUID);
 			needed.add(Setting.NAME);
 			SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
-			for(SettingValue v : values)
+			for (SettingValue v : values)
 				switch (v.getSetting()) {
 				case NAME:
 					name = v.getValue();
@@ -111,7 +116,7 @@ public class LoadedPlayer {
 				default:
 					break;
 				}
-		}catch(Exception e){
+		} catch (Exception e) {
 			isLoading = false;
 			loaded = false;
 			throw e;
@@ -140,20 +145,20 @@ public class LoadedPlayer {
 		handle.handle.writePacket(packet);
 		return future;
 	}
-	
+
 	public int getCoinsSync() {
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		Packet packet = new PacketInStatsRequest(playerId, GameType.Money);
 		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
-		for(Statistic s : future.getSync())
-			if(s.getStatsKey() == StatsKey.COINS)
+		for (Statistic s : future.getSync())
+			if (s.getStatsKey() == StatsKey.COINS)
 				return s.asInt();
 		return -1;
 	}
-	
-	public ProgressFuture<PacketOutPacketStatus.Error[]> changeCoins(Action action,int coins){
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> changeCoins(Action action, int coins) {
 		return setStats(new EditStats(GameType.Money, action, StatsKey.COINS, coins));
 	}
 
@@ -163,23 +168,23 @@ public class LoadedPlayer {
 		Packet packet = new PacketInStatsRequest(playerId, GameType.Money);
 		StatsResponseFuture future = new StatsResponseFuture(handle.handle, packet, getUUID(), GameType.Money);
 		handle.handle.writePacket(packet);
-		for(Statistic s : future.getSync())
-			if(s.getStatsKey() == StatsKey.GEMS)
+		for (Statistic s : future.getSync())
+			if (s.getStatsKey() == StatsKey.GEMS)
 				return s.asInt();
 		return -1;
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> changeGems(Action action,int coins){
+	public ProgressFuture<PacketOutPacketStatus.Error[]> changeGems(Action action, int coins) {
 		return setStats(new EditStats(GameType.Money, action, StatsKey.GEMS, coins));
 	}
-	
-	public LanguageType getLanguageSync(){
+
+	public LanguageType getLanguageSync() {
 		SettingValue[] response = getSettings(Setting.LANGUAGE).getSyncSave();
 		if (response != null && response.length == 1 && response[0].getSetting() == Setting.LANGUAGE)
 			return LanguageType.getLanguageFromName(response[0].getValue());
 		return LanguageType.ENGLISH;
 	}
-	
+
 	public SettingsResponseFuture getSettings(Setting... settings) {
 		Packet packet = new PacketInPlayerSettingsRequest(playerId, settings);
 		SettingsResponseFuture future = new SettingsResponseFuture(handle.handle, packet, playerId);
@@ -214,7 +219,7 @@ public class LoadedPlayer {
 		PacketInChangePlayerSettings packet = new PacketInChangePlayerSettings(playerId, Setting.PREMIUM_LOGIN, active + "");
 		handle.writePacket(packet).getSync();
 		SettingValue[] values = getSettings(Setting.UUID).getSync();
-		for(SettingValue v : values)
+		for (SettingValue v : values)
 			switch (v.getSetting()) {
 			case UUID:
 				uuid = UUID.fromString(v.getValue());
@@ -233,40 +238,45 @@ public class LoadedPlayer {
 		handle.handle.writePacket(p);
 		return f;
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> setStats(EditStats... changes){
-		Iterable<PacketInStatsEdit.EditStats> statis = Iterables.filter(Arrays.asList(changes),new Predicate<PacketInStatsEdit.EditStats>() {
-		    @Override
-		    public boolean apply(PacketInStatsEdit.EditStats arg0) {
-		        if(arg0==null)
-		            return false;
-		        if(arg0.getAction() == null || arg0.getGame() == null || arg0.getKey() == null || arg0.getValue() == null)
-		            return false;
-		        return true;
-		    }
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> setStats(EditStats... changes) {
+		Iterable<PacketInStatsEdit.EditStats> statis = Iterables.filter(Arrays.asList(changes), new Predicate<PacketInStatsEdit.EditStats>() {
+			@Override
+			public boolean apply(PacketInStatsEdit.EditStats arg0) {
+				if (arg0 == null)
+					return false;
+				if (arg0.getAction() == null || arg0.getGame() == null || arg0.getKey() == null || arg0.getValue() == null)
+					return false;
+				return true;
+			}
 		});
 		return handle.writePacket(new PacketInStatsEdit(playerId, FluentIterable.from(statis).toArray(EditStats.class)));
 	}
-	public BanStatsResponseFuture getBanStats(String ip){
-		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(),ip, name);
+
+	public BanStatsResponseFuture getBanStats(String ip) {
+		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(), ip, name);
 		BanStatsResponseFuture f = new BanStatsResponseFuture(handle.handle, p);
 		handle.handle.writePacket(p);
 		return f;
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp,String banner,String bannerIp,UUID bannerUUID,int level,long end,String reson){
-		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID+"", end, level, reson));
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp, String banner, String bannerIp, UUID bannerUUID, int level, long end, String reson) {
+		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID + "", end, level, reson));
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(String reson){
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(String reson) {
 		return handle.kickPlayer(playerId, reson);
 	}
+
 	public ProgressFuture<Skin> getOwnSkin() {
 		UUID uuid = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]{new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null,playerId)});
+		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
 		handle.writePacket(r);
-		return new FutureResponseTransformer<SkinResponse[],Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
+		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
 			@Override
 			public Skin transform(SkinResponse[] obj) {
-				if(obj.length > 0){
-					if(obj[0] == null){
+				if (obj.length > 0) {
+					if (obj[0] == null) {
 						return new SteveSkin();
 					}
 					return obj[0].getSkin();
@@ -275,19 +285,27 @@ public class LoadedPlayer {
 			}
 		};
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> setOwnSkin(Skin skin){
-		if(skin == null)
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> setOwnSkin(Skin skin) {
+		if (skin == null)
 			return handle.writePacket(new PacketSkinSet(playerId));
 		else
 			return handle.writePacket(new PacketSkinSet(playerId, skin));
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> activeNetworkBooster(BoosterType type,int time){
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> activeNetworkBooster(BoosterType type, int time) {
 		return handle.writePacket(new PacketBoosterActive(playerId, time, type));
 	}
-	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int millis){
+
+	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int millis) {
 		return setStats(new EditStats(GameType.BOOSTER, Action.ADD, StatsKey.BOOSTER_TIME, millis));
 	}
+
 	public void loadPlayer() {
 		load();
+	}
+
+	public boolean isOnlineSync() {
+		return getServer().getSync() != null;
 	}
 }

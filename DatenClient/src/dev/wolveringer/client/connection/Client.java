@@ -74,7 +74,7 @@ public class Client {
 
 	public void connect(byte[] password) throws Exception {
 		if (isConnected())
-			throw new RuntimeException("Client alredy connected!");
+			throw new RuntimeException("Client already connected!");
 		if(this.boss == null)
 			this.boss = new PacketHandlerBoss(this);
 		this.socket = new Socket(target.getAddress(), target.getPort());
@@ -94,11 +94,11 @@ public class Client {
 			}
 			if(boss.handschakeErrors != null){
 				disconnect();
-				throw new RuntimeException("Errors happend while handschaking: \n"+StringUtils.join(boss.handschakeErrors,"\n -"));
+				throw new RuntimeException("Errors happend while handshaking: \n"+StringUtils.join(boss.handschakeErrors,"\n -"));
 			}
 			if(boss.handschakeDisconnect != null){
 				disconnect();
-				throw new RuntimeException("Server denied connection. Reson: "+boss.handschakeDisconnect);
+				throw new RuntimeException("Server denied connection. Reason: "+boss.handschakeDisconnect);
 			}
 			if (start + timeout < System.currentTimeMillis()){
 				disconnect();

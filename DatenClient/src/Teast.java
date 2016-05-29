@@ -279,7 +279,7 @@ class TClient {
 		System.out.println(">> Connected");
 		DataBuffer buffer = new DataBuffer();
 		buffer.writeString("Hello world from "+name);
-		new ClientWrapper(client).brotcastMessage(null, "Hello world");
+		new ClientWrapper(client).broadcastMessage(null, "Hello world");
 	}
 	public static void testBan(LoadedPlayer player){
 		System.out.println("banned: "+ player.getBanStats(null).getSync());
