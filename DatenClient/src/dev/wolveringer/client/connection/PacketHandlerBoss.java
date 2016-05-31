@@ -33,9 +33,9 @@ public class PacketHandlerBoss {
 	private boolean debug = false;
 	
 	private Client owner;
-	protected boolean handschakeComplete = false;
-	protected Error[] handschakeErrors = null;
-	protected String handschakeDisconnect = null;
+	protected boolean handshakeComplete = false;
+	protected Error[] handshakeErrors = null;
+	protected String handshakeDisconnect = null;
 	
 	public PacketHandlerBoss(Client owner) {
 		this.owner = owner;
@@ -51,9 +51,9 @@ public class PacketHandlerBoss {
 	}
 	
 	protected void reset(){
-		handschakeComplete = false;
-		handschakeErrors = null;
-		handschakeDisconnect = null;
+		handshakeComplete = false;
+		handshakeErrors = null;
+		handshakeDisconnect = null;
 		for(PacketListener l : new ArrayList<>(listener))
 			if(l instanceof PacketResponseFuture)
 				listener.remove(l);
@@ -61,12 +61,12 @@ public class PacketHandlerBoss {
 	
 	protected void handle(Packet packet) {
 		if(packet instanceof PacketOutHandschakeAccept){
-			handschakeComplete = true;
+			handshakeComplete = true;
 			owner.getExternalHandler().connected();
 		}
 		if(packet instanceof PacketOutPacketStatus){
-			if(handschakeComplete == false){
-				handschakeErrors = ((PacketOutPacketStatus) packet).getErrors();
+			if(handshakeComplete == false){
+				handshakeErrors = ((PacketOutPacketStatus) packet).getErrors();
 			}
 			if(((PacketOutPacketStatus)packet).getErrors().length == 0){
 				if(debug)
@@ -85,8 +85,8 @@ public class PacketHandlerBoss {
 		if(packet instanceof PacketDisconnect){
 			if(debug)
 				System.out.println("Disconnected: "+((PacketDisconnect)packet).getReson());
-			if(handschakeComplete == false){
-				handschakeDisconnect = ((PacketDisconnect)packet).getReson();
+			if(handshakeComplete == false){
+				handshakeDisconnect = ((PacketDisconnect)packet).getReson();
 			}
 			owner.closePipeline();
 		}
@@ -131,7 +131,7 @@ public class PacketHandlerBoss {
 			for(Target t : ((PacketChatMessage) packet).getTargets()){
 				switch (t.getType()) {
 				case BROTCAST:
-					owner.getExternalHandler().brotcast(t.getPermission(), ((PacketChatMessage) packet).getMessage());
+					owner.getExternalHandler().broadcast(t.getPermission(), ((PacketChatMessage) packet).getMessage());
 					break;
 				case PLAYER:
 					owner.getExternalHandler().sendMessage(Integer.parseInt(t.getTarget()),((PacketChatMessage) packet).getMessage());
@@ -172,7 +172,7 @@ public class PacketHandlerBoss {
 			for(PacketListener l : new ArrayList<>(listener))
 				if(l != null)
 					l.handle(packet);
-		if(!handschakeComplete)
+		if(!handshakeComplete)
 			return;
 	}
 

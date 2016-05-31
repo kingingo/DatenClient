@@ -8,6 +8,7 @@ public class ServerStatusSender {
 	private ServerInformations i;
 	private Client owner;
 	private boolean active;
+	private int sleepTime;
 	
 	public ServerStatusSender(Client owner,ServerInformations infos) {
 		this.i = infos;
@@ -27,7 +28,7 @@ public class ServerStatusSender {
 				while (active && owner.isConnected()) {
 					updateServerStats();
 					try {
-						Thread.sleep(4000);
+						Thread.sleep(sleepTime);
 					} catch (InterruptedException e) {
 					}
 				}
@@ -36,6 +37,12 @@ public class ServerStatusSender {
 			}
 		});
 		thread.start();
+	}
+	public void setSleepTime(int sleepTime) {
+		this.sleepTime = sleepTime;
+	}
+	public int getSleepTime() {
+		return sleepTime;
 	}
 	public void updateServerStats() {
 		owner.writePacket(i.getStatus());

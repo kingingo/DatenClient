@@ -14,7 +14,7 @@ import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.futures.StatusResponseFuture;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketDisconnect;
-import dev.wolveringer.dataserver.protocoll.packets.PacketHandschakeInStart;
+import dev.wolveringer.dataserver.protocoll.packets.PacketHandshakeInStart;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
 import dev.wolveringer.event.EventManager;
@@ -58,6 +58,7 @@ public class Client {
 
 	protected boolean connected = false;
 
+	@Getter
 	protected ServerStatusSender infoSender;
 	private ServerInformations infoHandler;
 
@@ -85,20 +86,20 @@ public class Client {
 		this.reader.start();
 		connected = true;
 		//Handschaking
-		writePacket(new PacketHandschakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
+		writePacket(new PacketHandshakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
 		long start = System.currentTimeMillis();
-		while (!boss.handschakeComplete) {
+		while (!boss.handshakeComplete) {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 			}
-			if(boss.handschakeErrors != null){
+			if(boss.handshakeErrors != null){
 				disconnect();
-				throw new RuntimeException("Errors happend while handshaking: \n"+StringUtils.join(boss.handschakeErrors,"\n -"));
+				throw new RuntimeException("Errors happend while handshaking: \n"+StringUtils.join(boss.handshakeErrors,"\n -"));
 			}
-			if(boss.handschakeDisconnect != null){
+			if(boss.handshakeDisconnect != null){
 				disconnect();
-				throw new RuntimeException("Server denied connection. Reason: "+boss.handschakeDisconnect);
+				throw new RuntimeException("Server denied connection. Reason: "+boss.handshakeDisconnect);
 			}
 			if (start + timeout < System.currentTimeMillis()){
 				disconnect();
@@ -207,7 +208,7 @@ public class Client {
 		infoSender.updateServerStats();
 	}
 	
-	public boolean isHandschakeCompleded(){
-		return boss == null ? false : boss.handschakeComplete;
+	public boolean isHandshakeCompleted(){
+		return boss == null ? false : boss.handshakeComplete;
 	}
 }

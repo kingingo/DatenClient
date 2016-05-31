@@ -7,7 +7,7 @@ import dev.wolveringer.dataserver.protocoll.DataBuffer;
 
 public interface ActionListener {
 	public void sendMessage(int player,String message);
-	public void brotcast(String permission,String message);
+	public void broadcast(String permission,String message);
 	public void kickPlayer(int player,String message);
 	
 	public void disconnected();

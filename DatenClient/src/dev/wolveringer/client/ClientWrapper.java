@@ -322,8 +322,8 @@ public class ClientWrapper {
 		return new ReportResponseFuture(handle, request);
 	}
 
-	public ProgressFuture<PacketOutPacketStatus.Error[]> closeReport(ReportEntity e) {
-		return writePacket(new PacketReportEdit(EditKey.CLOSE, e.getReportId(), -1, null, null));
+	public ProgressFuture<PacketOutPacketStatus.Error[]> closeReport(ReportEntity e,int reson) {
+		return writePacket(new PacketReportEdit(EditKey.CLOSE, e.getReportId(), reson, null, null));
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> addReportWorker(int reportId, int workerId) {

@@ -215,7 +215,7 @@ class TClient {
 			}
 			
 			@Override
-			public void brotcast(String permission, String message) {
+			public void broadcast(String permission, String message) {
 				System.out.println("["+name+"] Brotcast: "+message+" Permission: "+permission);
 			}
 			
