@@ -8,7 +8,7 @@ public class ServerStatusSender {
 	private ServerInformations i;
 	private Client owner;
 	private boolean active;
-	private int sleepTime;
+	private int sleepTime = 1000;
 	
 	public ServerStatusSender(Client owner,ServerInformations infos) {
 		this.i = infos;
@@ -30,6 +30,7 @@ public class ServerStatusSender {
 					try {
 						Thread.sleep(sleepTime);
 					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
 				}
 				System.out.println("Stopping sending updates States: "+active+":"+owner.isConnected());

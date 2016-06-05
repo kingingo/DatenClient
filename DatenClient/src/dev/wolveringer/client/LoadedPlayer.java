@@ -308,4 +308,6 @@ public class LoadedPlayer {
 	public boolean isOnlineSync() {
 		return getServer().getSync() != null;
 	}
+	
+	
 }

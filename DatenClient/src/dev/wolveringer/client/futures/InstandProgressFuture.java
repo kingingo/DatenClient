@@ -32,12 +32,12 @@ public abstract class InstandProgressFuture<T> implements ProgressFuture<T> {
 
 	@Override
 	public void getAsync(Callback<T> call) {
-		call.call(get());
+		call.call(get(),null);
 	}
 
 	@Override
 	public void getAsync(Callback<T> call, int timeout) {
-		call.call(get());
+		call.call(get(),null);
 	}
 	
 	public abstract T get();

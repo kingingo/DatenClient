@@ -13,6 +13,7 @@ import dev.wolveringer.client.futures.BoosterResposeFuture;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
 import dev.wolveringer.client.futures.LanguageUpdateFuture;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
+import dev.wolveringer.client.futures.PacketResponseFuture;
 import dev.wolveringer.client.futures.PlayerIdResponseFuture;
 import dev.wolveringer.client.futures.ReportResponseFuture;
 import dev.wolveringer.client.futures.ServerStatusResponseFuture;
@@ -27,6 +28,15 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketBoosterStatusRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType;
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionRequest;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildSarchResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInLobbyServerRequest.GameRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketInServerStatusRequest;
@@ -49,6 +59,11 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinData.SkinResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSkinRequest.Type;
+import dev.wolveringer.gilde.GildPermissionGroup;
+import dev.wolveringer.gilde.GildSection;
+import dev.wolveringer.gilde.GildSectionPermission;
+import dev.wolveringer.gilde.GildeType;
+import dev.wolveringer.nbt.NBTTagCompound;
 import dev.wolveringer.report.ReportEntity;
 
 public class ClientWrapper {
@@ -346,5 +361,86 @@ public class ClientWrapper {
 		Packet p;
 		handle.writePacket(p = new PacketBoosterStatusRequest(playerId, type));
 		return new BoosterResposeFuture(handle, p, -1,BoosterType.NONE);
+	}
+	public ProgressFuture<PacketGildInformationResponse> getGildeInformations(UUID gilde){
+		Packet p;
+		handle.writePacket(p = new PacketGildInformationRequest(gilde));
+		return new PacketResponseFuture<PacketGildInformationResponse>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildInformationResponse)
+					if(((PacketGildInformationResponse)packet).getGilde().equals(gilde))
+						done((PacketGildInformationResponse) packet);
+			}
+		};
+	}
+	public ProgressFuture<PacketGildMemberResponse> getGildeMembers(UUID gilde){
+		Packet p;
+		handle.writePacket(p = new PacketGildInformationRequest(gilde));
+		return new PacketResponseFuture<PacketGildMemberResponse>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildMemberResponse)
+					if(((PacketGildMemberResponse)packet).getGilde().equals(gilde))
+						done((PacketGildMemberResponse) packet);
+			}
+		};
+	}
+	public ProgressFuture<ArrayList<String>> getGildGroups(GildSectionPermission selection){
+		Packet p;
+		handle.writePacket(p = new PacketGildPermissionRequest(selection.getHandle().getHandle().getUuid(), selection.getHandle().getType()));
+		return new PacketResponseFuture<ArrayList<String>>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildPermissionResponse)
+					if(((PacketGildPermissionResponse)packet).getGilde().equals(selection.getHandle().getHandle().getUuid()) && ((PacketGildPermissionResponse)packet).getType() == selection.getHandle().getType() && ((PacketGildPermissionResponse)packet).getGroup() == null)
+						done(((PacketGildPermissionResponse)packet).getResponse());
+			}
+		};
+	}
+	public ProgressFuture<ArrayList<String>> getPermissions(GildPermissionGroup group){
+		Packet p;
+		handle.writePacket(p = new PacketGildPermissionRequest(group.getHandle().getHandle().getHandle().getUuid(), group.getHandle().getHandle().getType(),group.getName()));
+		return new PacketResponseFuture<ArrayList<String>>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildPermissionResponse)
+					if(((PacketGildPermissionResponse)packet).getGilde().equals(group.getHandle().getHandle().getHandle().getUuid()) && ((PacketGildPermissionResponse)packet).getType() == group.getHandle().getHandle().getType() && ((PacketGildPermissionResponse)packet).getGroup() == group.getName())
+						done(((PacketGildPermissionResponse)packet).getResponse());
+			}
+		};
+	}
+	public ProgressFuture<UUID> getGildeFromName(String name){
+		Packet p;
+		handle.writePacket(p = new PacketGildSarch(dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch.Action.GILDE_NAME, name));
+		return new PacketResponseFuture<UUID>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildSarchResponse && ((PacketGildSarchResponse)packet).getRequested().equals(p.getPacketUUID()))
+					done(((PacketGildSarchResponse)packet).getUuid());
+			}
+		};
+	}
+	public ProgressFuture<UUID> getGildePlayer(LoadedPlayer player,GildeType type){
+		Packet p;
+		handle.writePacket(p = new PacketGildSarch(dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch.Action.PLAYER, player.getPlayerId()+";"+type.ordinal()));
+		return new PacketResponseFuture<UUID>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildSarchResponse && ((PacketGildSarchResponse)packet).getRequested().equals(p.getPacketUUID()))
+					done(((PacketGildSarchResponse)packet).getUuid());
+			}
+		};
+	}
+	public ProgressFuture<NBTTagCompound> getGildeData(GildSection gilde){
+		Packet p;
+		handle.writePacket(p = new PacketGildCostumDataAction(gilde.getHandle().getUuid(), gilde.getType()));
+		return new PacketResponseFuture<NBTTagCompound>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildCostumDataResponse && ((PacketGildCostumDataResponse)packet).getGilde().equals(gilde.getHandle().getUuid()) && ((PacketGildCostumDataResponse)packet).getType() == gilde.getType())
+					done(((PacketGildCostumDataResponse)packet).getComp());
+			}
+		};
 	}
 }

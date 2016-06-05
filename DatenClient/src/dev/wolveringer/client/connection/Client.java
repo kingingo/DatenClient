@@ -52,8 +52,7 @@ public class Client {
 
 	private ActionListener externalHandler;
 
-	protected long lastPingTime = -1;
-	protected long lastPing = -1;
+	private PingManager ping;
 	private TimeOutThread timeOut;
 
 	protected boolean connected = false;
@@ -74,42 +73,49 @@ public class Client {
 	}
 
 	public void connect(byte[] password) throws Exception {
-		if (isConnected())
-			throw new RuntimeException("Client already connected!");
-		if(this.boss == null)
-			this.boss = new PacketHandlerBoss(this);
-		this.socket = new Socket(target.getAddress(), target.getPort());
-		this.writer = new SocketWriter(this, socket.getOutputStream());
-		this.reader = new ReaderThread(this, socket.getInputStream());
-		this.timeOut = new TimeOutThread(this);
-		this.infoSender = new ServerStatusSender(this, infoHandler);
-		this.reader.start();
-		connected = true;
-		//Handschaking
-		writePacket(new PacketHandshakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
-		long start = System.currentTimeMillis();
-		while (!boss.handshakeComplete) {
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
+		try {
+			if (isConnected())
+				throw new RuntimeException("Client already connected!");
+			if (this.boss == null)
+				this.boss = new PacketHandlerBoss(this);
+			this.socket = new Socket(target.getAddress(), target.getPort());
+			this.writer = new SocketWriter(this, socket.getOutputStream());
+			this.reader = new ReaderThread(this, socket.getInputStream());
+			this.ping = new PingManager(this);
+			this.timeOut = new TimeOutThread(this);
+			this.infoSender = new ServerStatusSender(this, infoHandler);
+			this.reader.start();
+			connected = true;
+			//Handschaking
+			writePacket(new PacketHandshakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
+			long start = System.currentTimeMillis();
+			while (!boss.handshakeComplete) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+				}
+				if (boss.handshakeErrors != null) {
+					disconnect();
+					throw new RuntimeException("Errors happend while handshaking: \n" + StringUtils.join(boss.handshakeErrors, "\n -"));
+				}
+				if (boss.handshakeDisconnect != null) {
+					disconnect();
+					throw new RuntimeException("Server denied connection. Reason: " + boss.handshakeDisconnect);
+				}
+				if (start + timeout < System.currentTimeMillis()) {
+					disconnect();
+					throw new RuntimeException("Handschake needs longer than 5000ms");
+				}
 			}
-			if(boss.handshakeErrors != null){
-				disconnect();
-				throw new RuntimeException("Errors happend while handshaking: \n"+StringUtils.join(boss.handshakeErrors,"\n -"));
-			}
-			if(boss.handshakeDisconnect != null){
-				disconnect();
-				throw new RuntimeException("Server denied connection. Reason: "+boss.handshakeDisconnect);
-			}
-			if (start + timeout < System.currentTimeMillis()){
-				disconnect();
-				throw new RuntimeException("Handschake needs longer than 5000ms");
-			}
+			ClientWrapper.unloadAllPlayers();
+			timeOut.start();
+			infoSender.start();
+			eventManager.updateAll();
+			getExternalHandler().connected();
+		} catch (Exception e) {
+			closePipeline(true);
+			throw e;
 		}
-		ClientWrapper.unloadAllPlayers();
-		timeOut.start();
-		infoSender.start();
-		eventManager.updateAll();
 	}
 
 	public void disconnect() {
@@ -117,33 +123,42 @@ public class Client {
 	}
 
 	public void disconnect(String message) {
-		writePacket(new PacketDisconnect(message));
-		closePipeline();
+		try{
+			writePacket(new PacketDisconnect(message));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		closePipeline(false);
 	}
 
-	protected void closePipeline() {
-		if (!connected)
+	protected void closePipeline(boolean force) {
+		if (!connected && !force)
 			return;
 		connected = false;
-		reader.close();
-		writer.close();
-		timeOut.stop();
-		infoSender.stop();
+		if (reader != null)
+			reader.close();
+		if (writer != null)
+			writer.close();
+		if (timeOut != null)
+			timeOut.stop();
+		if (infoSender != null)
+			infoSender.stop();
 		try {
-			socket.close();
+			if (socket != null)
+				socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		externalHandler.disconnected();
+		if (externalHandler != null)
+			externalHandler.disconnected();
 		socket = null;
 		reader = null;
 		writer = null;
 		timeOut = null;
 		infoSender = null;
-		lastPingTime = -1;
-		lastPing = -1;
-		//boss.handschakeComplete = false;
-		boss.reset();
+		ping = null;
+		if (boss != null)
+			boss.reset();
 	}
 
 	public ProgressFuture<Error[]> writePacket(Packet packet) {
@@ -154,6 +169,8 @@ public class Client {
 	}
 
 	private synchronized void writePacket0(Packet packet) {
+		if(writer == null)
+			return;
 		try {
 			writer.write(packet);
 		} catch (IOException e) {
@@ -161,8 +178,10 @@ public class Client {
 				return;
 			if (e.getMessage().equalsIgnoreCase("Socket closed")) {
 				connected = false;
-				reader.close();
-				writer.close();
+				if (reader != null)
+					reader.close();
+				if (writer != null)
+					writer.close();
 				return;
 			}
 			e.printStackTrace();
@@ -177,8 +196,8 @@ public class Client {
 		return externalHandler;
 	}
 
-	public long getPing() {
-		return lastPing;
+	public PingManager getPingManager() {
+		return ping;
 	}
 
 	public boolean isConnected() {
@@ -207,8 +226,8 @@ public class Client {
 	public void updateServerStats() {
 		infoSender.updateServerStats();
 	}
-	
-	public boolean isHandshakeCompleted(){
+
+	public boolean isHandshakeCompleted() {
 		return boss == null ? false : boss.handshakeComplete;
 	}
 }

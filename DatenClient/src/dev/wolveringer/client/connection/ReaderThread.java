@@ -28,7 +28,7 @@ public class ReaderThread {
 				try {
 					while (active) {
 						if(!client.socket.isConnected()){
-							client.closePipeline();
+							client.closePipeline(false);
 							return;
 						}
 						if(in.available() > 0)
@@ -57,12 +57,15 @@ public class ReaderThread {
 			return;
 		}
 		byte[] bbuffer = new byte[length];
-		for(int i = 0;i<bbuffer.length;i++)
+		for(int i = 0;i<bbuffer.length;i++){
 			bbuffer[i] = (byte) in.read();
+		}
+		
 		DataBuffer buffer = new DataBuffer(bbuffer);
 		ThreadFactory.getFactory().createThread(new Runnable() {
 			public void run() {
-				Packet packet = Packet.createPacket(buffer.readInt(), buffer,PacketDirection.TO_CLIENT);
+				int packetId = buffer.readInt();
+				Packet packet = Packet.createPacket(packetId, buffer,PacketDirection.TO_CLIENT);
 				try{
 					client.getHandlerBoss().handle(packet);	
 				}catch(Exception e){
@@ -95,7 +98,7 @@ public class ReaderThread {
 		if (reader != null) {
 			reader.stop();
 		}
-		client.closePipeline();
+		client.closePipeline(false);
 	}
 
 }

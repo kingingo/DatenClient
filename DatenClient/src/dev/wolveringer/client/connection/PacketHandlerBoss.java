@@ -62,7 +62,6 @@ public class PacketHandlerBoss {
 	protected void handle(Packet packet) {
 		if(packet instanceof PacketOutHandschakeAccept){
 			handshakeComplete = true;
-			owner.getExternalHandler().connected();
 		}
 		if(packet instanceof PacketOutPacketStatus){
 			if(handshakeComplete == false){
@@ -88,7 +87,7 @@ public class PacketHandlerBoss {
 			if(handshakeComplete == false){
 				handshakeDisconnect = ((PacketDisconnect)packet).getReson();
 			}
-			owner.closePipeline();
+			owner.closePipeline(false);
 		}
 		if(packet instanceof PacketOutPlayerSettings){
 			if(debug){
@@ -141,8 +140,7 @@ public class PacketHandlerBoss {
 			}
 		}
 		else if(packet instanceof PacketPong){
-			owner.lastPing = System.currentTimeMillis()-((PacketPong)packet).getTime();
-			owner.lastPingTime = System.currentTimeMillis();
+			owner.getPingManager().handlePong((PacketPong) packet);
 		}
 		else if(packet instanceof PacketPing){
 			owner.writePacket(new PacketPong(System.currentTimeMillis()));

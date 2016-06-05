@@ -49,7 +49,6 @@ public abstract class BaseProgressFuture<T> implements ProgressFuture<T>{
 			}
 			if (start + timeout < System.currentTimeMillis()) {
 				throw new RuntimeException("Timeout");
-				//return null;
 			}
 		}
 		return response;
@@ -64,12 +63,13 @@ public abstract class BaseProgressFuture<T> implements ProgressFuture<T>{
 			@Override
 			public void run() {
 				T out = null;
+				Exception ex = null;
 				try {
 					out = getSyncSave(timeout);
 				} catch (Exception e) {
-					
+					ex = e;
 				}
-				call.call(out);
+				call.call(out,ex);
 			}
 		}).start();
 	}

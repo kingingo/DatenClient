@@ -63,8 +63,9 @@ public class EventManager {
 		else
 			handle.writePacket(packet).getAsync(new Callback<PacketOutPacketStatus.Error[]>() {
 				@Override
-				public void call(PacketOutPacketStatus.Error[] obj) {
-					
+				public void call(PacketOutPacketStatus.Error[] obj,Throwable e) {
+					if(e != null)
+						e.printStackTrace();
 				}
 			});
 	}

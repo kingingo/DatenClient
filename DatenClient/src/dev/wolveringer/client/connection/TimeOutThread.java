@@ -20,13 +20,12 @@ public class TimeOutThread {
 		runner = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
-				while (owner.socket.isConnected() && active) {
-					try {
-						owner.writePacket(new PacketPing(System.currentTimeMillis()));
-					} catch (Exception e) {}
-					if (System.currentTimeMillis() - owner.lastPingTime > maxTime && owner.lastPingTime != -1) {
+				while (owner.isConnected() && active) {
+					owner.getPingManager().ping();
+					int ping = owner.getPingManager().getCurrentPing();
+					if (ping > maxTime && ping != -1) {
 						owner.disconnect("Client ->  Server -> Timeout! (Clientbased!)");
-						System.out.println("Client timed out (" + (System.currentTimeMillis() - owner.lastPingTime) + ")");
+						System.out.println("Client timed out (" + (ping) + ")");
 						return;
 					}
 					try {

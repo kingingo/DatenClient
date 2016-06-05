@@ -40,8 +40,8 @@ public abstract class FutureResponseTransformer<IN,OUT> implements ProgressFutur
 	public void getAsync(Callback<OUT> call) {
 		future.getAsync(new Callback<IN>() {
 			@Override
-			public void call(IN obj) {
-				call.call(transform(obj));
+			public void call(IN obj, Throwable e) {
+				call.call(obj != null ? transform(obj) : null,e);
 			}
 			
 		});
@@ -51,8 +51,8 @@ public abstract class FutureResponseTransformer<IN,OUT> implements ProgressFutur
 	public void getAsync(Callback<OUT> call, int timeout) {
 		future.getAsync(new Callback<IN>() {
 			@Override
-			public void call(IN obj) {
-				call.call(transform(obj));
+			public void call(IN obj, Throwable e) {
+				call.call(obj != null ? transform(obj) : null,e);
 			}
 			
 		}, timeout);
