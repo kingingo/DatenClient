@@ -10,6 +10,7 @@ import dev.wolveringer.client.PacketHandleErrorException;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse.MemberInformation;
+import dev.wolveringer.gilde.GildeType;
 import lombok.Getter;
 
 public class Gilde {
@@ -22,24 +23,43 @@ public class Gilde {
 	private String name;
 	@Getter
 	private String shortName;
+	@Getter
+	private int ownerId;
 	
 	private HashMap<GildeType, GildSection> selections;
 	private boolean exist;
+	private boolean loaded;
 	
 	public Gilde(ClientWrapper connection,UUID uuid) {
 		this.uuid = uuid;
 		this.connection = connection;
 	}
 	
+	public synchronized void reload(){
+		loaded = false;
+		load();
+	}
+	
+	public synchronized void reloadNameAndShortname(){
+		PacketGildInformationResponse infos = connection.getGildeInformations(uuid).getSync();
+		name = infos.getName();
+		shortName = infos.getShortName();
+		ownerId = infos.getOwnerId();
+	}
+	
 	public void load(){
+		if(loaded)
+			return;
 		try{
 			PacketGildInformationResponse infos = connection.getGildeInformations(uuid).getSync();
 			name = infos.getName();
 			shortName = infos.getShortName();
+			ownerId = infos.getOwnerId();
 			for(GildeType t : infos.getActiveSections())
 				selections.put(t, new GildSection(this, t, true));
 			for(GildeType t : GildeType.values())
-				selections.putIfAbsent(t, new GildSection(this, t, false));
+				if(t != GildeType.ALL)
+					selections.putIfAbsent(t, new GildSection(this, t, false));
 			PacketGildMemberResponse member = connection.getGildeMembers(uuid).getSync();
 			for(MemberInformation i : member.getMember()){
 				for(int j = 0;j<i.getMember().length;j++) {
@@ -48,12 +68,22 @@ public class Gilde {
 				}
 			}
 			exist = true;
+			loaded = true;
 		}catch(PacketHandleErrorException e){
-			if(e.getErrors()[0].getId() == -2)
+			if(e.getErrors().length >= 1 && e.getErrors()[0].getId() == -2){
+				loaded = true;
 				exist = false;
+			}
+			else
+				e.printStackTrace();
 		}
 			
 	}
+	
+	public GildSection getSelection(GildeType type){
+		return selections.get(type);
+	}
+	
 	public List<GildSection> getActiveSections(){
 		ArrayList<GildSection> out = new ArrayList<>();
 		for(GildSection s : selections.values())

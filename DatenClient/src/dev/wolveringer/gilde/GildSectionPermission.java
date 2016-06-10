@@ -2,6 +2,7 @@ package dev.wolveringer.gilde;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionEdit;
@@ -21,7 +22,7 @@ public class GildSectionPermission {
 
 	private synchronized void init() {
 		if (groups == null) {
-			ArrayList<String> names = handle.getHandle().getConnection().getGildGroups(this).getSync();
+			List<String> names = handle.getHandle().getConnection().getGildGroups(this).getSync();
 			groups = new ArrayList<>();
 			for (String s : names)
 				groups.add(new GildPermissionGroup(this, s));
@@ -31,10 +32,10 @@ public class GildSectionPermission {
 	public synchronized void reload(){
 		if(groups == null)
 			throw new RuntimeException("Cant reload before loading");
-		ArrayList<String> names = handle.getHandle().getConnection().getGildGroups(this).getSync();
+		List<String> names = handle.getHandle().getConnection().getGildGroups(this).getSync();
 		for (String s : names)
 			if(getGroup(s) == null)
-				groups.add(new GildPermissionGroup(this, s));
+				loadGroup(s);
 		for(GildPermissionGroup g : new ArrayList<>(groups))
 			if(!names.contains(g.getName()))
 				groups.remove(g);
@@ -56,6 +57,12 @@ public class GildSectionPermission {
 		return null;
 	}
 
+	protected void loadGroup(String name){
+		if(getGroup(name) != null)
+			return;
+		groups.add(new GildPermissionGroup(this, name));
+	}
+	
 	public GildPermissionGroup getGroup(LoadedPlayer player) {
 		init();
 		return getGroup(players.get(new Integer(player.getPlayerId())));
@@ -66,7 +73,6 @@ public class GildSectionPermission {
 		if(old != null && old.equals(group))
 			return;
 		if(old != null){
-			handle.getHandle().getConnection().writePacket(new PacketGildPermissionEdit(handle.getHandle().getUuid(), handle.getType(), Action.REMOVE_GROUP, String.valueOf(player.getPlayerId()), old.getName()));
 			players.remove(new Integer(player.getPlayerId()));
 		}else
 		{
@@ -74,8 +80,12 @@ public class GildSectionPermission {
 				throw new IllegalArgumentException("Cant set permission of a player whitch isnt in gild.");
 		}
 		if(group != null){
-			handle.getHandle().getConnection().writePacket(new PacketGildPermissionEdit(handle.getHandle().getUuid(), handle.getType(), Action.ADD_GROUP, String.valueOf(player.getPlayerId()), group.getName()));
+			handle.getHandle().getConnection().writePacket(new PacketGildPermissionEdit(handle.getHandle().getUuid(), handle.getType(), Action.CHANGE_GROUP, String.valueOf(player.getPlayerId()), group.getName()));
 			players.put(new Integer(player.getPlayerId()), group.getName());
 		}
+	}
+
+	public void unloadGroup(String group) {
+		groups.remove(getGroup(group));
 	}
 }

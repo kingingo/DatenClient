@@ -17,7 +17,7 @@ public class GildPermissionGroup {
 	
 	@Getter
 	private String name;
-	private ArrayList<String> permissions;
+	protected ArrayList<String> permissions;
 	
 	public GildPermissionGroup(GildSectionPermission handle,String name) {
 		this.name = name;
@@ -27,7 +27,7 @@ public class GildPermissionGroup {
 	private synchronized void init(){
 		if(permissions == null){
 			ClientWrapper connection = handle.getHandle().getHandle().getConnection();
-			permissions = connection.getPermissions(this).getSync();
+			permissions = new ArrayList<>(connection.getPermissions(this).getSync());
 		}
 	}
 	

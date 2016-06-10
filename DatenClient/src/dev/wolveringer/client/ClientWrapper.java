@@ -1,6 +1,7 @@
 package dev.wolveringer.client;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -155,8 +156,9 @@ public class ClientWrapper {
 			return;
 		for (LoadedPlayer s : new ArrayList<>(players))
 			if (player != null)
-				if (s.equals(player))
-					players.remove(s);
+				if(s != null)
+					if (s.equals(player))
+						players.remove(s);
 	}
 
 	public ArrayList<LoadedPlayer> getPlayers() {
@@ -386,10 +388,10 @@ public class ClientWrapper {
 			}
 		};
 	}
-	public ProgressFuture<ArrayList<String>> getGildGroups(GildSectionPermission selection){
+	public ProgressFuture<List<String>> getGildGroups(GildSectionPermission selection){
 		Packet p;
 		handle.writePacket(p = new PacketGildPermissionRequest(selection.getHandle().getHandle().getUuid(), selection.getHandle().getType()));
-		return new PacketResponseFuture<ArrayList<String>>(handle,p) {
+		return new PacketResponseFuture<List<String>>(handle,p) {
 			@Override
 			public void handlePacket(Packet packet) {
 				if(packet instanceof PacketGildPermissionResponse)
@@ -398,10 +400,10 @@ public class ClientWrapper {
 			}
 		};
 	}
-	public ProgressFuture<ArrayList<String>> getPermissions(GildPermissionGroup group){
+	public ProgressFuture<List<String>> getPermissions(GildPermissionGroup group){
 		Packet p;
 		handle.writePacket(p = new PacketGildPermissionRequest(group.getHandle().getHandle().getHandle().getUuid(), group.getHandle().getHandle().getType(),group.getName()));
-		return new PacketResponseFuture<ArrayList<String>>(handle,p) {
+		return new PacketResponseFuture<List<String>>(handle,p) {
 			@Override
 			public void handlePacket(Packet packet) {
 				if(packet instanceof PacketGildPermissionResponse)

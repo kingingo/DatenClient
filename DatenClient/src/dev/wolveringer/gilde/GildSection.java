@@ -7,7 +7,9 @@ import java.util.List;
 import dev.wolveringer.client.LoadedPlayer;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemeberAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildUpdateSectionStatus;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemeberAction.Action;
+import dev.wolveringer.gilde.GildeType;
 import dev.wolveringer.nbt.NBTTagCompound;
 import lombok.Getter;
 
@@ -17,7 +19,7 @@ public class GildSection {
 	@Getter
 	private GildeType type;
 	@Getter
-	private boolean active;
+	protected boolean active;
 	private GildSectionPermission permissions = new GildSectionPermission(this);
 	private NBTTagCompound costumData;
 	
@@ -53,5 +55,12 @@ public class GildSection {
 	}
 	public void saveCostumData(){
 		handle.getConnection().writePacket(new PacketGildCostumDataAction(handle.getUuid(), type, costumData));
+	}
+	
+	public void setActive(boolean active) {
+		if(this.active == active)
+			return;
+		this.active = active;
+		handle.getConnection().writePacket(new PacketGildUpdateSectionStatus(handle.getUuid(), type, active));
 	}
 }
