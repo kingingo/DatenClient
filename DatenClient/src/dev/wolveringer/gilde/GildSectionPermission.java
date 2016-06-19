@@ -88,4 +88,9 @@ public class GildSectionPermission {
 	public void unloadGroup(String group) {
 		groups.remove(getGroup(group));
 	}
+	
+	public boolean hasPermission(LoadedPlayer player,GildePermissions perm){
+		GildPermissionGroup group = getGroup(player);
+		return group != null && group.getPermissions().contains(perm.getPermission());
+	}
 }

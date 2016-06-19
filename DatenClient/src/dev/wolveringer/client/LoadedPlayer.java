@@ -91,11 +91,12 @@ public class LoadedPlayer {
 				idResponse = handle.getPlayerIds(name).getSync();
 			else if (uuid != null)
 				idResponse = handle.getPlayerIds(uuid).getSync();
-			else if (playerId != -1)
-				idResponse = new int[] { playerId };
+			else if (playerId > 0)
+				idResponse = new int[]
+				{ playerId };
 			else {
 				isLoading = false;
-				throw new NullPointerException("Cant load player without informations. this -> Name: " + name + ", uuid: " + uuid + ", playerId: " + playerId);
+				throw new NullPointerException("Cant load player with missing informations. this -> Name: " + name + ", uuid: " + uuid + ", playerId: " + playerId + " | playerIdResponse -> " + (idResponse != null && idResponse.length >= 1 ? idResponse[0] : "undefined"));
 			}
 			if (idResponse == null || idResponse.length < 1) {
 				isLoading = false;
@@ -270,7 +271,8 @@ public class LoadedPlayer {
 
 	public ProgressFuture<Skin> getOwnSkin() {
 		UUID uuid = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
+		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]
+		{ new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
 			@Override
@@ -308,6 +310,9 @@ public class LoadedPlayer {
 	public boolean isOnlineSync() {
 		return getServer().getSync() != null;
 	}
-	
-	
+
+	public void setIp(String ip) {
+		handle.writePacket(new PacketInChangePlayerSettings(playerId, Setting.CURRUNT_IP, ip));
+	}
+
 }

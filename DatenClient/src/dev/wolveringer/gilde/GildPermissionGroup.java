@@ -12,11 +12,14 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionEdit.Act
 import lombok.Getter;
 
 public class GildPermissionGroup {
+	private static final String ITEM_ID_PREFIX = "permission.itemid.";
 	@Getter
 	private GildSectionPermission handle;
 	
 	@Getter
 	private String name;
+	@Getter
+	private Integer itemId = 1;
 	protected ArrayList<String> permissions;
 	
 	public GildPermissionGroup(GildSectionPermission handle,String name) {
@@ -29,6 +32,18 @@ public class GildPermissionGroup {
 			ClientWrapper connection = handle.getHandle().getHandle().getConnection();
 			permissions = new ArrayList<>(connection.getPermissions(this).getSync());
 		}
+		for(String s : getPermissions()){
+			if(s.startsWith("permission.itemid.")){
+				permissions.remove(s);
+				itemId = Integer.parseInt(s.replaceAll(ITEM_ID_PREFIX, ""));
+			}
+		}
+	}
+	
+	public void setItemId(int id){
+		removePermission(ITEM_ID_PREFIX+itemId);
+		this.itemId = id;
+		addPermission(ITEM_ID_PREFIX+itemId);
 	}
 	
 	public void reload(){

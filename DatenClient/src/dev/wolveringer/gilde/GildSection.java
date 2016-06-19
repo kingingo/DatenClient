@@ -63,4 +63,8 @@ public class GildSection {
 		this.active = active;
 		handle.getConnection().writePacket(new PacketGildUpdateSectionStatus(handle.getUuid(), type, active));
 	}
+	
+	public LoadedPlayer getStatsPlayer(){
+		return handle.getConnection().getPlayerAndLoad(handle.getUuid().toString().toLowerCase()+"_stats");
+	}
 }

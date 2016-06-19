@@ -176,7 +176,7 @@ public class Client {
 		} catch (IOException e) {
 			if (e.getMessage().equalsIgnoreCase("Broken pipe") || e.getMessage().equalsIgnoreCase("Connection reset"))
 				return;
-			if (e.getMessage().equalsIgnoreCase("Socket closed")) {
+			if (e.getMessage().equalsIgnoreCase("Socket closed") || e.getMessage().equalsIgnoreCase("Datenübergabe unterbrochen (broken pipe)")) {
 				connected = false;
 				if (reader != null)
 					reader.close();
@@ -203,26 +203,7 @@ public class Client {
 	public boolean isConnected() {
 		return connected;
 	}
-
-	public static void main(String[] args) throws InterruptedException {
-		System.out.println("Starting test Client");
-		Client client = new Client(new InetSocketAddress("localhost", 1111), ClientType.BUNGEECORD, "01", new ServerInformations() {
-			@Override
-			public PacketInServerStatus getStatus() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		});
-		try {
-			client.connect("HelloWorld".getBytes());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		while (true) {
-			Thread.sleep(10000);
-		}
-	}
-
+	
 	public void updateServerStats() {
 		infoSender.updateServerStats();
 	}

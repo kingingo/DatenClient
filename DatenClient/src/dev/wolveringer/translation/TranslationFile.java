@@ -207,4 +207,9 @@ public class TranslationFile {
 		}
 		return (double)translated/ (double)handle.getTranslationManager().getTranslationFile(other).translations.size()*100D;
 	}
+	
+	public void registerFallbackMessage(String key,String message){
+		if(!translations.containsKey(key))
+			translations.put(key, message);
+	}
 }
