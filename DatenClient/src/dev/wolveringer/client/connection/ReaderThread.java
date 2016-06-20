@@ -29,6 +29,7 @@ public class ReaderThread {
 					while (active) {
 						if(!client.socket.isConnected()){
 							client.closePipeline(false);
+							client.getExternalHandler().disconnected();
 							return;
 						}
 						if(in.available() > 0)
@@ -41,10 +42,10 @@ public class ReaderThread {
 						return;
 					if (!active)
 						return;
-					e.printStackTrace();
 					System.err.println("Reader Broken");
 					e.printStackTrace();
 					close0();
+					client.getExternalHandler().disconnected();
 				}
 			}
 		});

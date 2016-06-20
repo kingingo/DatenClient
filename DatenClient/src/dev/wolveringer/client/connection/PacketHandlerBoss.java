@@ -88,6 +88,7 @@ public class PacketHandlerBoss {
 				handshakeDisconnect = ((PacketDisconnect)packet).getReson();
 			}
 			owner.closePipeline(false);
+			owner.getExternalHandler().disconnected();
 		}
 		if(packet instanceof PacketOutPlayerSettings){
 			if(debug){

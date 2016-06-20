@@ -73,6 +73,7 @@ public class Client {
 	}
 
 	public void connect(byte[] password) throws Exception {
+		State state = State.CONNECTING;
 		try {
 			if (isConnected())
 				throw new RuntimeException("Client already connected!");
@@ -86,6 +87,7 @@ public class Client {
 			this.infoSender = new ServerStatusSender(this, infoHandler);
 			this.reader.start();
 			connected = true;
+			state = State.HANDSCHAKING;
 			//Handschaking
 			writePacket(new PacketHandshakeInStart(host, name, password, type, Packet.PROTOCOLL_VERSION));
 			long start = System.currentTimeMillis();
@@ -107,12 +109,14 @@ public class Client {
 					throw new RuntimeException("Handschake needs longer than 5000ms");
 				}
 			}
+			state = State.LOGGED_IN;
 			ClientWrapper.unloadAllPlayers();
 			timeOut.start();
 			infoSender.start();
 			eventManager.updateAll();
 			getExternalHandler().connected();
 		} catch (Exception e) {
+			externalHandler.error(state,e);
 			closePipeline(true);
 			throw e;
 		}
@@ -129,6 +133,7 @@ public class Client {
 			e.printStackTrace();
 		}
 		closePipeline(false);
+		externalHandler.disconnected();
 	}
 
 	protected void closePipeline(boolean force) {
@@ -149,8 +154,6 @@ public class Client {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (externalHandler != null)
-			externalHandler.disconnected();
 		socket = null;
 		reader = null;
 		writer = null;
