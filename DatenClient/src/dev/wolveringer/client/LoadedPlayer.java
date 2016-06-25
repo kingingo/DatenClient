@@ -254,12 +254,13 @@ public class LoadedPlayer {
 		return handle.writePacket(new PacketInStatsEdit(playerId, FluentIterable.from(statis).toArray(EditStats.class)));
 	}
 
-	public BanStatsResponseFuture getBanStats(String ip) {
-		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(), ip, name);
+	public BanStatsResponseFuture getBanStats(String ip, int deep) {
+		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(), ip, name, deep);
 		BanStatsResponseFuture f = new BanStatsResponseFuture(handle.handle, p);
 		handle.handle.writePacket(p);
 		return f;
 	}
+	
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp, String banner, String bannerIp, UUID bannerUUID, int level, long end, String reson) {
 		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID + "", end, level, reson));
