@@ -92,15 +92,10 @@ public class LoadedPlayer {
 			else if (uuid != null)
 				idResponse = handle.getPlayerIds(uuid).getSync();
 			else if (playerId > 0)
-				idResponse = new int[]
-				{ playerId };
-			else {
+				idResponse = new int[] { playerId };
+			if(idResponse == null || idResponse.length < 1 || idResponse[0] < 0){
 				isLoading = false;
 				throw new NullPointerException("Cant load player with missing informations. this -> Name: " + name + ", uuid: " + uuid + ", playerId: " + playerId + " | playerIdResponse -> " + (idResponse != null && idResponse.length >= 1 ? idResponse[0] : "undefined"));
-			}
-			if (idResponse == null || idResponse.length < 1) {
-				isLoading = false;
-				throw new RuntimeException("cant load player! Response == null");
 			}
 			playerId = idResponse[0];
 			ArrayList<Setting> needed = new ArrayList<>();
@@ -260,7 +255,6 @@ public class LoadedPlayer {
 		handle.handle.writePacket(p);
 		return f;
 	}
-	
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp, String banner, String bannerIp, UUID bannerUUID, int level, long end, String reson) {
 		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID + "", end, level, reson));
