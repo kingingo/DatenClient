@@ -1,6 +1,7 @@
 package dev.wolveringer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -419,7 +420,7 @@ public class ClientWrapper {
 			@Override
 			public void handlePacket(Packet packet) {
 				if(packet instanceof PacketGildSarchResponse && ((PacketGildSarchResponse)packet).getRequested().equals(p.getPacketUUID()))
-					done(((PacketGildSarchResponse)packet).getUuid());
+					done(((PacketGildSarchResponse)packet).getResponse().size() >= 1 ? ((PacketGildSarchResponse)packet).getResponse().entrySet().iterator().next().getKey() : null);
 			}
 		};
 	}
@@ -430,7 +431,18 @@ public class ClientWrapper {
 			@Override
 			public void handlePacket(Packet packet) {
 				if(packet instanceof PacketGildSarchResponse && ((PacketGildSarchResponse)packet).getRequested().equals(p.getPacketUUID()))
-					done(((PacketGildSarchResponse)packet).getUuid());
+					done(((PacketGildSarchResponse)packet).getResponse().size() >= 1 ? ((PacketGildSarchResponse)packet).getResponse().entrySet().iterator().next().getKey() : null);
+			}
+		};
+	}
+	public ProgressFuture<HashMap<UUID, String>> getAvailableGilde(GildeType type){
+		Packet p;
+		handle.writePacket(p = new PacketGildSarch(dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch.Action.TYPE, String.valueOf(type.ordinal())));
+		return new PacketResponseFuture<HashMap<UUID, String>>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildSarchResponse && ((PacketGildSarchResponse)packet).getRequested().equals(p.getPacketUUID()))
+					done(((PacketGildSarchResponse)packet).getResponse());
 			}
 		};
 	}

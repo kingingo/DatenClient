@@ -70,7 +70,6 @@ public class ReaderThread {
 			public void run() {
 				int packetId = buffer.readInt();
 				Packet packet = Packet.createPacket(packetId, buffer,PacketDirection.TO_CLIENT);
-				System.out.println(packet.getClass().getName());
 				try{
 					client.getHandlerBoss().handle(packet);	
 				}catch(Exception e){
