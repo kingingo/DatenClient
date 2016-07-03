@@ -51,9 +51,12 @@ public class ReaderThread {
 		});
 	}
 
+	long lastReset = System.currentTimeMillis();
+	int handeled = 0;
+	
 	private synchronized void readPacket() throws IOException {
 		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read()) & 0x000000ff;
-		if (length <= 0) {
+		if (length <= 0 || length > 65000) {
 			System.out.println("Reader index wrong (Wrong length)");
 			return;
 		}
@@ -67,14 +70,21 @@ public class ReaderThread {
 			public void run() {
 				int packetId = buffer.readInt();
 				Packet packet = Packet.createPacket(packetId, buffer,PacketDirection.TO_CLIENT);
+				System.out.println(packet.getClass().getName());
 				try{
 					client.getHandlerBoss().handle(packet);	
 				}catch(Exception e){
 					System.out.println("Error while handeling packet "+packet);
 					e.printStackTrace();
 				}
+				handeled++;
 			}
 		}).start();
+		if(lastReset+10*1000 < System.currentTimeMillis()){
+			System.out.println("handeling "+(handeled/10)+" Packet per second!");
+			handeled = 0;
+			lastReset = System.currentTimeMillis();
+		}
 	}
 
 	public void start() {
@@ -101,5 +111,4 @@ public class ReaderThread {
 		}
 		client.closePipeline(false);
 	}
-
 }
