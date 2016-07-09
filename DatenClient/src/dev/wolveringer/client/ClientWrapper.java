@@ -13,6 +13,7 @@ import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.client.connection.ClientType;
 import dev.wolveringer.client.futures.BoosterResposeFuture;
 import dev.wolveringer.client.futures.FutureResponseTransformer;
+import dev.wolveringer.client.futures.GildCreateReponseFuture;
 import dev.wolveringer.client.futures.LanguageUpdateFuture;
 import dev.wolveringer.client.futures.LobbyServerResponseFuture;
 import dev.wolveringer.client.futures.PacketResponseFuture;
@@ -32,8 +33,10 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildCreate;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionResponse;
@@ -379,7 +382,7 @@ public class ClientWrapper {
 	}
 	public ProgressFuture<PacketGildMemberResponse> getGildeMembers(UUID gilde){
 		Packet p;
-		handle.writePacket(p = new PacketGildInformationRequest(gilde));
+		handle.writePacket(p = new PacketGildMemberRequest(gilde));
 		return new PacketResponseFuture<PacketGildMemberResponse>(handle,p) {
 			@Override
 			public void handlePacket(Packet packet) {
@@ -407,9 +410,13 @@ public class ClientWrapper {
 		return new PacketResponseFuture<List<String>>(handle,p) {
 			@Override
 			public void handlePacket(Packet packet) {
-				if(packet instanceof PacketGildPermissionResponse)
-					if(((PacketGildPermissionResponse)packet).getGilde().equals(group.getHandle().getHandle().getHandle().getUuid()) && ((PacketGildPermissionResponse)packet).getType() == group.getHandle().getHandle().getType() && ((PacketGildPermissionResponse)packet).getGroup() == group.getName())
-						done(((PacketGildPermissionResponse)packet).getResponse());
+				if(packet instanceof PacketGildPermissionResponse){
+					System.out.println(((PacketGildPermissionResponse) packet).getType()+" - "+((PacketGildPermissionResponse) packet).getGroup()+" - "+((PacketGildPermissionResponse) packet).getGilde()+" - "+((PacketGildPermissionResponse) packet).getResponse());
+					if(((PacketGildPermissionResponse)packet).getGilde().equals(group.getHandle().getHandle().getHandle().getUuid()))
+						if(((PacketGildPermissionResponse)packet).getType() == group.getHandle().getHandle().getType())
+							if(((PacketGildPermissionResponse)packet).getGroup().equalsIgnoreCase(group.getName()))
+								done(((PacketGildPermissionResponse)packet).getResponse());
+				}
 			}
 		};
 	}
@@ -456,5 +463,22 @@ public class ClientWrapper {
 					done(((PacketGildCostumDataResponse)packet).getComp());
 			}
 		};
+	}
+	public ProgressFuture<UUID> getOwnGilde(LoadedPlayer player){
+		Packet p;
+		handle.writePacket(p = new PacketGildSarch(dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch.Action.OWN_GILD, String.valueOf(player.getPlayerId())));
+		return new PacketResponseFuture<UUID>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildSarchResponse)
+					if(((PacketGildSarchResponse) packet).getRequested().equals(p.getPacketUUID()))
+						done(((PacketGildSarchResponse) packet).getResponse().size() == 0 ? null : ((PacketGildSarchResponse) packet).getResponse().keySet().iterator().next());
+			}
+		};
+	}
+	public ProgressFuture<UUID> createGilde(LoadedPlayer player,String name){
+		PacketGildCreate p;
+		handle.writePacket(p = new PacketGildCreate(player.getPlayerId(), name));
+		return new GildCreateReponseFuture(handle, p);
 	}
 }

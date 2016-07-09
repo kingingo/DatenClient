@@ -3,6 +3,7 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +22,10 @@ import dev.wolveringer.event.EventManager;
 import lombok.Getter;
 
 public class Client {
+	public static interface Unsafe {
+		public ReaderThread getReaderThread();
+		public SocketWriter getWriterThread();
+	}
 	public static Client createBungeecordClient(String name, InetSocketAddress target, BungeeCordActionListener listener, ServerInformations infos) {
 		Client client = new Client(target, ClientType.BUNGEECORD, name, infos);
 		client.externalHandler = listener;
@@ -64,6 +69,22 @@ public class Client {
 	@Getter
 	private EventManager eventManager;
 
+	private Unsafe unsave = new Unsafe() {
+		@Override
+		public SocketWriter getWriterThread() {
+			return writer;
+		}
+		
+		@Override
+		public ReaderThread getReaderThread() {
+			return reader;
+		}
+	};
+	
+	public Unsafe unsave() {
+		return unsave;
+	}
+	
 	private Client(InetSocketAddress target, ClientType type, String clientName, ServerInformations infoHandler) {
 		this.target = target;
 		this.type = type;
@@ -166,31 +187,10 @@ public class Client {
 
 	public ProgressFuture<Error[]> writePacket(Packet packet) {
 		StatusResponseFuture f = new StatusResponseFuture(this, packet.getPacketUUID());
-		writePacket0(packet);
+		writer.addPacket(packet);
 		return f;
-
 	}
-
-	private synchronized void writePacket0(Packet packet) {
-		if(writer == null)
-			return;
-		try {
-			writer.write(packet);
-		} catch (IOException e) {
-			if (e.getMessage().equalsIgnoreCase("Broken pipe") || e.getMessage().equalsIgnoreCase("Connection reset"))
-				return;
-			if (e.getMessage().equalsIgnoreCase("Socket closed") || e.getMessage().equalsIgnoreCase("Datenübergabe unterbrochen (broken pipe)")) {
-				connected = false;
-				if (reader != null)
-					reader.close();
-				if (writer != null)
-					writer.close();
-				return;
-			}
-			e.printStackTrace();
-		}
-	}
-
+	
 	public PacketHandlerBoss getHandlerBoss() {
 		return boss;
 	}

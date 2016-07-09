@@ -50,6 +50,13 @@ public class GildSection {
 		}
 	}
 	
+	public void addMemeber(LoadedPlayer player){
+		if(!players.contains(new Integer(player.getPlayerId()))){
+			players.add(new Integer(player.getPlayerId()));
+			handle.getConnection().writePacket(new PacketGildMemeberAction(handle.getUuid(), type, player.getPlayerId(), Action.CHANGE_GROUP, "default"));
+		}
+	}
+	
 	public NBTTagCompound getCostumData() {
 		return costumData;
 	}

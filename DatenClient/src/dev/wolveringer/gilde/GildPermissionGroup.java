@@ -21,10 +21,12 @@ public class GildPermissionGroup {
 	@Getter
 	private Integer itemId = 1;
 	protected ArrayList<String> permissions;
-	
+	@Getter
+	private boolean defaultGroup;
 	public GildPermissionGroup(GildSectionPermission handle,String name) {
 		this.name = name;
 		this.handle = handle;
+		init();	
 	}
 	
 	private synchronized void init(){
@@ -32,10 +34,14 @@ public class GildPermissionGroup {
 			ClientWrapper connection = handle.getHandle().getHandle().getConnection();
 			permissions = new ArrayList<>(connection.getPermissions(this).getSync());
 		}
-		for(String s : getPermissions()){
+		for(String s : new ArrayList<>(getPermissions())){
 			if(s.startsWith("permission.itemid.")){
 				permissions.remove(s);
 				itemId = Integer.parseInt(s.replaceAll(ITEM_ID_PREFIX, ""));
+			}
+			if(s.equals("group.default")){
+				defaultGroup = true;
+				permissions.remove(s);
 			}
 		}
 	}
@@ -48,7 +54,6 @@ public class GildPermissionGroup {
 	
 	public void reload(){
 		permissions = null;
-		init();
 	}
 	
 	public List<String> getPermissions() {
@@ -74,9 +79,11 @@ public class GildPermissionGroup {
 	}
 	public ArrayList<LoadedPlayer> getPlayers(){
 		ArrayList<LoadedPlayer> players = new ArrayList<>();
-		for(Entry<Integer, String> player : handle.players.entrySet())
+		for(Entry<Integer, String> player : handle.players.entrySet()){
+			System.out.println(player.getKey()+" | "+player.getValue());
 			if(player.getValue().equalsIgnoreCase(name))
-				players.add(handle.getHandle().getHandle().getConnection().getPlayer(player.getKey()));
+				players.add(handle.getHandle().getHandle().getConnection().getPlayerAndLoad(player.getKey()));
+		}
 		return players;
 	}
 }

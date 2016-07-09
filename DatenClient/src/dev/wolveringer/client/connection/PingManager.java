@@ -13,8 +13,9 @@ public class PingManager {
 	private final Client client;
 	
 	public void ping(){
-		if(lastPingPacket != -1)
-			return;
+		//if(lastPingPacket != -1)
+			//return;
+		if(lastPingPacket == -1)
 		lastPingPacket = System.currentTimeMillis();
 		client.writePacket(new PacketPing(System.currentTimeMillis()));
 	}

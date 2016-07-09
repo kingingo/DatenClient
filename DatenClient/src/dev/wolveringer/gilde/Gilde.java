@@ -1,6 +1,7 @@
 package dev.wolveringer.gilde;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class Gilde {
 	@Getter
 	private int ownerId;
 	
-	private HashMap<GildeType, GildSection> selections;
+	private HashMap<GildeType, GildSection> selections = new HashMap();
 	private boolean exist;
 	private boolean loaded;
 	
@@ -62,6 +63,7 @@ public class Gilde {
 					selections.putIfAbsent(t, new GildSection(this, t, false));
 			PacketGildMemberResponse member = connection.getGildeMembers(uuid).getSync();
 			for(MemberInformation i : member.getMember()){
+				System.out.println(i.getPlayerId()+" - "+Arrays.asList(i.getGroups())+" - "+Arrays.asList(i.getMember()));
 				for(int j = 0;j<i.getMember().length;j++) {
 					selections.get(i.getMember()[j]).players.add(i.getPlayerId());
 					selections.get(i.getMember()[j]).getPermission().players.put(i.getPlayerId(), i.getGroups()[j]);

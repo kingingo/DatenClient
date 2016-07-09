@@ -112,6 +112,7 @@ public class LoadedPlayer {
 				default:
 					break;
 				}
+			System.out.println("Player "+name+" loaded -> PlayerID: "+playerId);
 		} catch (Exception e) {
 			isLoading = false;
 			loaded = false;
@@ -119,6 +120,18 @@ public class LoadedPlayer {
 		}
 		isLoading = false;
 		loaded = true;
+		if(handle.getPlayer(playerId) != this){
+			handle.clearCacheForPlayer(handle.getPlayer(playerId));
+			System.out.println("Duplicated player id "+playerId);
+		}
+		if(handle.getPlayer(name) != this){
+			handle.clearCacheForPlayer(handle.getPlayer(name));
+			System.out.println("Duplicated player name "+name);
+		}
+		if(handle.getPlayer(uuid) != this){
+			handle.clearCacheForPlayer(handle.getPlayer(uuid));
+			System.out.println("Duplicated player uuid "+uuid);
+		}
 	}
 
 	public String getName() {

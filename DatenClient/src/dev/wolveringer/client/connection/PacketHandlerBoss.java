@@ -1,8 +1,9 @@
 package dev.wolveringer.client.connection;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import dev.wolveringer.arrays.CachedArrayList;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.futures.PacketResponseFuture;
@@ -28,8 +29,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSettingUpdate;
 
 public class PacketHandlerBoss {
-	private List<PacketListener> listener = new ArrayList<>();
-	
+	private CachedArrayList<PacketListener> listener = new CachedArrayList<PacketListener>(10, TimeUnit.SECONDS);
 	private boolean debug = false;
 	
 	private Client owner;
@@ -39,15 +39,27 @@ public class PacketHandlerBoss {
 	
 	public PacketHandlerBoss(Client owner) {
 		this.owner = owner;
+		this.listener.addUnloadListener(new CachedArrayList.UnloadListener<PacketListener>() {
+			@Override
+			public boolean canUnload(PacketListener element) {
+				System.out.println("Unload element: "+element);
+				return element instanceof PacketResponseFuture;
+			}
+		});
 	}
 
 	public void addListener(PacketListener listener){
-		if(listener == null)
-			throw new NullPointerException("Listener cant be null!");
-		this.listener.add(listener);
+		synchronized (this.listener) {
+			if(listener == null)
+				throw new NullPointerException("Listener cant be null!");
+			this.listener.add(listener);
+		}
 	}
 	public void removeListener(PacketListener listener){
-		this.listener.remove(listener);
+		synchronized (this.listener) {
+			this.listener.remove(listener);
+			System.out.println("Size: "+this.listener.size());
+		}
 	}
 	
 	protected void reset(){
@@ -141,9 +153,11 @@ public class PacketHandlerBoss {
 			}
 		}
 		else if(packet instanceof PacketPong){
+			System.out.println("Pong");
 			owner.getPingManager().handlePong((PacketPong) packet);
 		}
 		else if(packet instanceof PacketPing){
+			System.out.println("Ping");
 			owner.writePacket(new PacketPong(System.currentTimeMillis()));
 		}
 		else if(packet instanceof PacketServerMessage){

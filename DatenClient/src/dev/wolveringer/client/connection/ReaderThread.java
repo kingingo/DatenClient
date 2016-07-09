@@ -10,11 +10,31 @@ import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.Packet.PacketDirection;
 
 public class ReaderThread {
+	public static interface Unsave {
+		public InputStream getInputsteam();
+		public ThreadRunner getThread();
+	}
+	
 	private Client client;
 	private InputStream in;
 	private ThreadRunner reader;
 	private boolean active;
-
+	private Unsave unsave = new Unsave() {
+		@Override
+		public ThreadRunner getThread() {
+			return reader;
+		}
+		
+		@Override
+		public InputStream getInputsteam() {
+			return in;
+		}
+	};
+	
+	public Unsave unsave() {
+		return unsave;
+	}
+	
 	public ReaderThread(Client client, InputStream in) {
 		this.client = client;
 		this.in = in;
@@ -55,9 +75,11 @@ public class ReaderThread {
 	int handeled = 0;
 	
 	private synchronized void readPacket() throws IOException {
+		long start = System.currentTimeMillis();
 		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read()) & 0x000000ff;
-		if (length <= 0 || length > 65000) {
-			System.out.println("Reader index wrong (Wrong length)");
+		if (length <= 0 || length > 650000) {
+			System.out.println("Reader index wrong (Wrong length ("+length+"))");
+			client.closePipeline(true);
 			return;
 		}
 		byte[] bbuffer = new byte[length];
@@ -84,6 +106,8 @@ public class ReaderThread {
 			handeled = 0;
 			lastReset = System.currentTimeMillis();
 		}
+		long end = System.currentTimeMillis();
+		//System.out.println("Read packet in "+(end-start));
 	}
 
 	public void start() {

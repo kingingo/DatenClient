@@ -20,6 +20,7 @@ public class SkinResponseFuture extends PacketResponseFuture<SkinResponse[]> {
 	public void handlePacket(Packet packet) {
 		if (packet instanceof PacketSkinData) {
 			PacketSkinData data = (PacketSkinData) packet;
+			System.out.println(data.getRequestUUID()+" - "+skinRequest);
 			if (data.getRequestUUID().equals(skinRequest)){
 				done(data.getReponse());
 			}

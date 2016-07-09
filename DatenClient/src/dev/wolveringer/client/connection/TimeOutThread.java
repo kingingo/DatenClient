@@ -2,8 +2,6 @@ package dev.wolveringer.client.connection;
 
 import dev.wolveringer.client.threadfactory.ThreadFactory;
 import dev.wolveringer.client.threadfactory.ThreadRunner;
-import dev.wolveringer.dataserver.protocoll.packets.PacketPing;
-import dev.wolveringer.dataserver.protocoll.packets.PacketPong;
 
 public class TimeOutThread {
 	private ThreadRunner runner;
@@ -24,8 +22,25 @@ public class TimeOutThread {
 					owner.getPingManager().ping();
 					int ping = owner.getPingManager().getCurrentPing();
 					if (ping > maxTime && ping != -1) {
-						owner.disconnect("Client ->  Server -> Timeout! (Clientbased!)");
-						System.out.println("Client timed out (" + (ping) + ")");
+						ThreadFactory.getFactory().createThread(()->{ //own thread will be killed forcely
+							int trys = 0;
+							while (true) {
+								try{
+									System.out.println("Client timed out (" + (ping) + "). Disconnecting..");
+									owner.disconnect("Client ->  Server -> Timeout! (Clientbased!)");
+									System.out.println("Client timed out (" + (ping) + "). Disceonnected");
+									return;
+								}catch(Exception e){
+									e.printStackTrace();
+									System.err.println("Cant disconnect!");
+								}
+								if(trys > 10){
+									System.out.println("Force System to exit! Cant disconnect");
+									System.exit(-2);
+								}
+								trys++;
+							}
+						}).start();
 						return;
 					}
 					try {
