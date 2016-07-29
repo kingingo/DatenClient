@@ -21,4 +21,6 @@ public interface ActionListener {
 	
 	public void restart(String kickMessage);
 	public void stop(String kickMessage);
+	
+	public boolean isOnline(String name);
 }

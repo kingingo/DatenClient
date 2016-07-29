@@ -1,6 +1,6 @@
 package dev.wolveringer.client;
 
-import dev.wolveringer.client.threadfactory.ThreadFactory;
+import dev.wolveringer.thread.ThreadFactory;
 import lombok.Getter;
 import net.md_5.bungee.api.plugin.Plugin;
 

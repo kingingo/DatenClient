@@ -70,7 +70,18 @@ public class TranslationManager {
 		}
 		return translation.replaceAll("\\\\n", "\n");
 	}
+	
 	private String formatTranslation(String in,Object[] args){
+		return formatTranslation(in, args, true);
+	}
+	
+	private String formatTranslation(String in,Object[] args, boolean replacePlayer){
+		if(replacePlayer){
+			for(int i = 0;i<args.length;i++)
+				if(ObjectUtils.toString(args[i], "^").matches("([a-zA-Z0-9]){3,16}"))
+					if(handle.getPlayer(ObjectUtils.toString(args[i])) != null && handle.getPlayer(ObjectUtils.toString(args[i])).isLoaded() && handle.getHandle().getExternalHandler().isOnline(ObjectUtils.toString(args[i])))
+						args[i] = "{player_"+ObjectUtils.toString(args[i])+"}";
+		}
 		for(int i = 0;i<args.length;i++)
 			in = in.replaceAll("%s"+i, ObjectUtils.toString(args[i], "undefined"));
 		return in;

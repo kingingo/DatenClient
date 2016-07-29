@@ -3,11 +3,12 @@ package dev.wolveringer.client.connection;
 import java.io.IOException;
 import java.io.InputStream;
 
-import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.client.threadfactory.ThreadRunner;
+import dev.wolveringer.client.debug.Debugger;
 import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.Packet.PacketDirection;
+import dev.wolveringer.thread.ThreadFactory;
+import dev.wolveringer.thread.ThreadRunner;
 
 public class ReaderThread {
 	public static interface Unsave {
@@ -62,7 +63,7 @@ public class ReaderThread {
 						return;
 					if (!active)
 						return;
-					System.err.println("Reader Broken");
+					Debugger.debug("Reader Broken");
 					e.printStackTrace();
 					close0();
 					client.getExternalHandler().disconnected();
@@ -102,12 +103,12 @@ public class ReaderThread {
 			}
 		}).start();
 		if(lastReset+10*1000 < System.currentTimeMillis()){
-			System.out.println("handeling "+(handeled/10)+" Packet per second!");
+			Debugger.debug("Handeling "+(handeled/10)+" Packet per second!");
 			handeled = 0;
 			lastReset = System.currentTimeMillis();
 		}
 		long end = System.currentTimeMillis();
-		//System.out.println("Read packet in "+(end-start));
+		Debugger.debug("Readed packet in "+(end-start)+"ms");
 	}
 
 	public void start() {

@@ -1,7 +1,7 @@
 package dev.wolveringer.client.connection;
 
-import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.client.threadfactory.ThreadRunner;
+import dev.wolveringer.thread.ThreadFactory;
+import dev.wolveringer.thread.ThreadRunner;
 
 public class TimeOutThread {
 	private ThreadRunner runner;

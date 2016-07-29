@@ -195,7 +195,7 @@ public class Client {
 		return boss;
 	}
 
-	protected ActionListener getExternalHandler() {
+	public ActionListener getExternalHandler() {
 		return externalHandler;
 	}
 

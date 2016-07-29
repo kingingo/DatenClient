@@ -84,6 +84,12 @@
 							</includes>
 						</filter>
 						<filter>
+							<artifact>dev.wolveringer:ThreadManager</artifact>
+							<includes>
+								<include>dev/wolveringer/**</include>
+							</includes>
+						</filter>
+						<filter>
 							<artifact>*:*</artifact>
 							<excludes>
 								<exclude>META-INF/*.SF</exclude>
@@ -192,6 +198,11 @@
 			<groupId>dev.wolveringer.lib</groupId>
 			<artifactId>NBTTag</artifactId>
 			<version>1.2.1</version>
+		</dependency>
+		<dependency>
+			 <groupId>dev.wolveringer</groupId>
+ 			 <artifactId>ThreadManager</artifactId>
+  			 <version>1.0</version>
 		</dependency>
 	</dependencies>
 </project>

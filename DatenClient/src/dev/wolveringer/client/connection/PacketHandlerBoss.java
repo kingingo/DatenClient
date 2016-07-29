@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import dev.wolveringer.arrays.CachedArrayList;
+import dev.wolveringer.client.debug.Debugger;
 import dev.wolveringer.client.external.BungeeCordActionListener;
 import dev.wolveringer.client.external.ServerActionListener;
 import dev.wolveringer.client.futures.PacketResponseFuture;
@@ -29,8 +30,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketServerMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketSettingUpdate;
 
 public class PacketHandlerBoss {
-	private CachedArrayList<PacketListener> listener = new CachedArrayList<PacketListener>(10, TimeUnit.SECONDS);
-	private boolean debug = false;
+	private CachedArrayList<PacketListener> listener = new CachedArrayList<PacketListener>(20, TimeUnit.SECONDS);
 	
 	private Client owner;
 	protected boolean handshakeComplete = false;
@@ -42,7 +42,7 @@ public class PacketHandlerBoss {
 		this.listener.addUnloadListener(new CachedArrayList.UnloadListener<PacketListener>() {
 			@Override
 			public boolean canUnload(PacketListener element) {
-				System.out.println("Unload element: "+element);
+				Debugger.debug("Unload element: "+element);
 				return element instanceof PacketResponseFuture;
 			}
 		});
@@ -58,7 +58,6 @@ public class PacketHandlerBoss {
 	public void removeListener(PacketListener listener){
 		synchronized (this.listener) {
 			this.listener.remove(listener);
-			System.out.println("Size: "+this.listener.size());
 		}
 	}
 	
@@ -80,22 +79,20 @@ public class PacketHandlerBoss {
 				handshakeErrors = ((PacketOutPacketStatus) packet).getErrors();
 			}
 			if(((PacketOutPacketStatus)packet).getErrors().length == 0){
-				if(debug)
-					System.out.println("Packet sucessfull handled ("+((PacketOutPacketStatus)packet).getPacketId()+")");
+				Debugger.debug("Packet sucessfull handled ("+((PacketOutPacketStatus)packet).getPacketId()+")");
 			}
 			else
 			{
-				if(debug){
-					System.out.println("Error Packet ("+packet.getPacketUUID()+") -> Errors:");
+				if(Debugger.isEnabled()){
+					Debugger.debug("Error Packet ("+packet.getPacketUUID()+") -> Errors:");
 					for(PacketOutPacketStatus.Error r : ((PacketOutPacketStatus)packet).getErrors())
-						System.out.println(" - "+r.getMessage());
+						Debugger.debug(" - "+r.getMessage());
 				}
 			}
 			//owner.closePipeline();
 		}
 		if(packet instanceof PacketDisconnect){
-			if(debug)
-				System.out.println("Disconnected: "+((PacketDisconnect)packet).getReson());
+			Debugger.debug("Disconnected: "+((PacketDisconnect)packet).getReson());
 			if(handshakeComplete == false){
 				handshakeDisconnect = ((PacketDisconnect)packet).getReson();
 			}
@@ -103,10 +100,10 @@ public class PacketHandlerBoss {
 			owner.getExternalHandler().disconnected();
 		}
 		if(packet instanceof PacketOutPlayerSettings){
-			if(debug){
-				System.out.println("Player settings for: "+((PacketOutPlayerSettings)packet).getPlayer());
+			if(Debugger.isEnabled()){
+				Debugger.debug("Player settings for: "+((PacketOutPlayerSettings)packet).getPlayer());
 				for(SettingValue s : ((PacketOutPlayerSettings) packet).getValues())
-					System.out.println("   "+s.getSetting()+" -> "+s.getValue());
+					Debugger.debug("   "+s.getSetting()+" -> "+s.getValue());
 			}
 		}
 		if(packet instanceof PacketServerAction){
@@ -153,11 +150,11 @@ public class PacketHandlerBoss {
 			}
 		}
 		else if(packet instanceof PacketPong){
-			System.out.println("Pong");
+			Debugger.debug("Reciving pong!");
 			owner.getPingManager().handlePong((PacketPong) packet);
 		}
 		else if(packet instanceof PacketPing){
-			System.out.println("Ping");
+			Debugger.debug("Reciving ping! Sending pong!");
 			owner.writePacket(new PacketPong(System.currentTimeMillis()));
 		}
 		else if(packet instanceof PacketServerMessage){

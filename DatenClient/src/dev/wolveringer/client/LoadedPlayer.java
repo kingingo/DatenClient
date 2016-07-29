@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
+import javax.management.RuntimeErrorException;
+
+import org.apache.commons.lang3.Validate;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
@@ -41,13 +45,16 @@ import dev.wolveringer.gamestats.Statistic;
 import dev.wolveringer.skin.Skin;
 import dev.wolveringer.skin.SteveSkin;
 import lombok.Getter;
+import lombok.NonNull;
 
 public class LoadedPlayer {
 	@Getter
 	private int playerId = -1;
 	private UUID uuid;
 	private String name;
-
+	private String nickname;
+	private String displayedGroup;
+	
 	private ClientWrapper handle;
 
 	private boolean loaded;
@@ -66,17 +73,18 @@ public class LoadedPlayer {
 		this.playerId = playerId;
 	}
 
-	protected LoadedPlayer(ClientWrapper client, String name) {
+	protected LoadedPlayer(ClientWrapper client, @NonNull String name) {
 		this.name = name;
 		this.handle = client;
 	}
 
-	protected LoadedPlayer(ClientWrapper client, UUID uuid) {
+	protected LoadedPlayer(ClientWrapper client, @NonNull UUID uuid) {
 		this.uuid = uuid;
 		this.handle = client;
 	}
 
 	protected LoadedPlayer(ClientWrapper client, int id) {
+		Validate.isTrue(id > 0, "Invalid playerID -> " + id);
 		this.playerId = id;
 		this.handle = client;
 	}
@@ -91,16 +99,21 @@ public class LoadedPlayer {
 				idResponse = handle.getPlayerIds(name).getSync();
 			else if (uuid != null)
 				idResponse = handle.getPlayerIds(uuid).getSync();
-			else if (playerId > 0)
+			else if (playerId > 0){
 				idResponse = new int[] { playerId };
-			if(idResponse == null || idResponse.length < 1 || idResponse[0] < 0){
+			}
+			
+			if (idResponse == null || idResponse.length < 1 || idResponse[0] < 0) {
 				isLoading = false;
 				throw new NullPointerException("Cant load player with missing informations. this -> Name: " + name + ", uuid: " + uuid + ", playerId: " + playerId + " | playerIdResponse -> " + (idResponse != null && idResponse.length >= 1 ? idResponse[0] : "undefined"));
 			}
 			playerId = idResponse[0];
+			Validate.isTrue(playerId > 0, "Invalid responded playerID -> " + playerId);
+			
 			ArrayList<Setting> needed = new ArrayList<>();
 			needed.add(Setting.UUID);
 			needed.add(Setting.NAME);
+			needed.add(Setting.NICKNAME);
 			SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
 			for (SettingValue v : values)
 				switch (v.getSetting()) {
@@ -109,28 +122,33 @@ public class LoadedPlayer {
 					break;
 				case UUID:
 					uuid = UUID.fromString(v.getValue());
+				case NICKNAME:
+					nickname = v.getValue() == null ? name : v.getValue();
+					this.displayedGroup = nickname.split(":").length > 1 ? nickname.split(":")[1] : null;
+					this.nickname = nickname.split(":")[0];
 				default:
 					break;
 				}
-			System.out.println("Player "+name+" loaded -> PlayerID: "+playerId);
+			System.out.println("Player " + name + " loaded -> PlayerID: " + playerId);
 		} catch (Exception e) {
+			System.out.println("Exception while loading player {Name: "+name+", uuid: "+uuid+", playerId: "+playerId+"}");
 			isLoading = false;
 			loaded = false;
 			throw e;
-		}
+		} 
 		isLoading = false;
 		loaded = true;
-		if(handle.getPlayer(playerId) != this){
+		if (handle.getPlayer(playerId) != this) {
 			handle.clearCacheForPlayer(handle.getPlayer(playerId));
-			System.out.println("Duplicated player id "+playerId);
+			System.out.println("Duplicated player id " + playerId);
 		}
-		if(handle.getPlayer(name) != this){
+		if (handle.getPlayer(name) != this) {
 			handle.clearCacheForPlayer(handle.getPlayer(name));
-			System.out.println("Duplicated player name "+name);
+			System.out.println("Duplicated player name " + name);
 		}
-		if(handle.getPlayer(uuid) != this){
+		if (handle.getPlayer(uuid) != this) {
 			handle.clearCacheForPlayer(handle.getPlayer(uuid));
-			System.out.println("Duplicated player uuid "+uuid);
+			System.out.println("Duplicated player uuid " + uuid);
 		}
 	}
 
@@ -237,6 +255,53 @@ public class LoadedPlayer {
 			}
 	}
 
+	private void updateNickname(){
+		PacketInChangePlayerSettings packet = new PacketInChangePlayerSettings(playerId, Setting.NICKNAME, name+(displayedGroup != null ? ":"+displayedGroup : ""));
+		handle.writePacket(packet).getSync();
+		SettingValue[] values = getSettings(Setting.NICKNAME).getSync();
+		for (SettingValue v : values)
+			switch (v.getSetting()) {
+			case NICKNAME:
+				nickname = v.getValue() == null ? name : v.getValue();
+				this.displayedGroup = nickname.split(":").length > 1 ? nickname.split(":")[1] : null;
+				this.nickname = nickname.split(":")[0];
+			default:
+				break;
+			}
+	}
+	
+	public void setNicknameSync(String name) {
+		if (!loaded)
+			throw new RuntimeException("Player not loaded. Invoke load() at first");
+		this.name = name;
+		updateNickname();
+	}
+
+	public boolean hasNickname() {
+		return !(nickname != null && nickname.length() > 2 && nickname.equalsIgnoreCase(getName()));
+	}
+
+	public String getNickname() {
+		if (!hasNickname())
+			return name;
+		return nickname;
+	}
+
+	public boolean hasCostumGroup(){
+		return displayedGroup != null;
+	}
+	
+	public String getDisplayedGroup(){
+		return displayedGroup;
+	}
+	
+	public void setDisplayedGroup(String displayedGroup) {
+		if (!loaded)
+			throw new RuntimeException("Player not loaded. Invoke load() at first");
+		this.displayedGroup = displayedGroup;
+		updateNickname();
+	}
+	
 	public void setServerSync(String server) {
 		handle.writePacket(new PacketInServerSwitch(playerId, server)).getSync();
 	}
@@ -279,8 +344,7 @@ public class LoadedPlayer {
 
 	public ProgressFuture<Skin> getOwnSkin() {
 		UUID uuid = UUID.randomUUID();
-		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[]
-		{ new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
+		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
 		handle.writePacket(r);
 		return new FutureResponseTransformer<SkinResponse[], Skin>(new SkinResponseFuture(handle.handle, r, uuid)) {
 			@Override

@@ -1,7 +1,8 @@
 package dev.wolveringer.client.connection;
 
-import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.client.threadfactory.ThreadRunner;
+import dev.wolveringer.client.debug.Debugger;
+import dev.wolveringer.thread.ThreadFactory;
+import dev.wolveringer.thread.ThreadRunner;
 
 public class ServerStatusSender {
 	private ThreadRunner thread;
@@ -24,7 +25,7 @@ public class ServerStatusSender {
 		this.thread = ThreadFactory.getFactory().createThread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("Start to sending updateinformations from: "+i.getClass().getName());
+				Debugger.debug("Start to sending updateinformations from: "+i.getClass().getName());
 				while (active && owner.isConnected()) {
 					updateServerStats();
 					try {
@@ -33,7 +34,7 @@ public class ServerStatusSender {
 						e.printStackTrace();
 					}
 				}
-				System.out.println("Stopping sending updates States: "+active+":"+owner.isConnected());
+				Debugger.debug("Stopping sending updates States: "+active+":"+owner.isConnected());
 				thread = null;
 			}
 		});

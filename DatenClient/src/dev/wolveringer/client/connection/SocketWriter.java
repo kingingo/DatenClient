@@ -6,11 +6,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.wolveringer.client.threadfactory.ThreadFactory;
-import dev.wolveringer.client.threadfactory.ThreadRunner;
+import dev.wolveringer.client.debug.Debugger;
 import dev.wolveringer.dataserver.protocoll.DataBuffer;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.Packet.PacketDirection;
+import dev.wolveringer.thread.ThreadFactory;
+import dev.wolveringer.thread.ThreadRunner;
 
 public class SocketWriter {
 	public static interface Unsave {
@@ -69,7 +70,6 @@ public class SocketWriter {
 				}
 				if(packet != null){
 					try{
-						System.out.println("Writepacket: "+packet.getClass().getName());
 						write(packet);
 					}catch(Exception e){
 						handleException(e);
@@ -130,7 +130,7 @@ public class SocketWriter {
 		out.write(os.toByteArray());
 		out.flush();
 		long end = System.currentTimeMillis();
-		//System.out.println("Write packet in "+(end-start)+" ms");
+		Debugger.debug("Write packet "+packet.getClass().getName()+" in "+(end-start)+" ms");
 	}
 	
 	public void close() {
