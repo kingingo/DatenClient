@@ -76,7 +76,7 @@ public class TranslationManager {
 	}
 	
 	private String formatTranslation(String in,Object[] args, boolean replacePlayer){
-		if(replacePlayer){
+		if(false && replacePlayer){
 			for(int i = 0;i<args.length;i++)
 				if(ObjectUtils.toString(args[i], "^").matches("([a-zA-Z0-9]){3,16}"))
 					if(handle.getPlayer(ObjectUtils.toString(args[i])) != null && handle.getPlayer(ObjectUtils.toString(args[i])).isLoaded() && handle.getHandle().getExternalHandler().isOnline(ObjectUtils.toString(args[i])))
