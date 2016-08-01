@@ -150,11 +150,11 @@ public class PacketHandlerBoss {
 			}
 		}
 		else if(packet instanceof PacketPong){
-//			Debugger.debug("Reciving pong!");
+			Debugger.debug("Reciving pong!");
 			owner.getPingManager().handlePong((PacketPong) packet);
 		}
 		else if(packet instanceof PacketPing){
-//			Debugger.debug("Reciving ping! Sending pong!");
+			Debugger.debug("Reciving ping! Sending pong!");
 			owner.writePacket(new PacketPong(System.currentTimeMillis()));
 		}
 		else if(packet instanceof PacketServerMessage){
