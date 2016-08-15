@@ -73,7 +73,7 @@ import dev.wolveringer.report.ReportEntity;
 
 public class ClientWrapper {
 	protected Client handle;
-	private static CachedArrayList<LoadedPlayer> players = new CachedArrayList<LoadedPlayer>(20, TimeUnit.MINUTES);
+	private static CachedArrayList<LoadedPlayer> players = new CachedArrayList<>(20, TimeUnit.MINUTES);
 
 	public static void unloadAllPlayers() {
 		players.clear();
@@ -94,12 +94,11 @@ public class ClientWrapper {
 	@Deprecated
 	public LoadedPlayer getPlayer(String name) {
 		for (LoadedPlayer player : new ArrayList<>(players))
-			if (player != null)
-				if (player.getName() != null)
-					if (player.getName().equalsIgnoreCase(name)) {
-						players.resetTime(player);
-						return player;
-					}
+			if (player != null && player.getName() != null)
+				if (player.getName().equalsIgnoreCase(name)) {
+					players.resetTime(player);
+					return player;
+				}
 		LoadedPlayer player = new LoadedPlayer(this, name);
 		players.add(player);
 		return player;
@@ -108,12 +107,11 @@ public class ClientWrapper {
 	@Deprecated
 	public LoadedPlayer getPlayer(UUID uuid) {
 		for (LoadedPlayer player : new ArrayList<>(players))
-			if (player != null)
-				if (player.getUUID() != null)
-					if (player.getUUID().equals(uuid)) {
-						players.resetTime(player);
-						return player;
-					}
+			if (player != null && player.getUUID() != null)
+				if (player.getUUID().equals(uuid)) {
+					players.resetTime(player);
+					return player;
+				}
 		LoadedPlayer player = new LoadedPlayer(this, uuid);
 		players.add(player);
 		return player;
@@ -159,10 +157,9 @@ public class ClientWrapper {
 		if (player == null)
 			return;
 		for (LoadedPlayer s : new ArrayList<>(players))
-			if (player != null)
-				if(s != null)
-					if (s.equals(player))
-						players.remove(s);
+			if(s != null)
+				if (s.equals(player))
+					players.remove(s);
 	}
 
 	public ArrayList<LoadedPlayer> getPlayers() {

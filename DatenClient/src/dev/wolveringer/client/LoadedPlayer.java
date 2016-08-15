@@ -110,11 +110,7 @@ public class LoadedPlayer {
 			playerId = idResponse[0];
 			Validate.isTrue(playerId > 0, "Invalid responded playerID -> " + playerId);
 			
-			ArrayList<Setting> needed = new ArrayList<>();
-			needed.add(Setting.UUID);
-			needed.add(Setting.NAME);
-			needed.add(Setting.NICKNAME);
-			SettingValue[] values = getSettings(needed.toArray(new Setting[0])).getSync();
+			SettingValue[] values = getSettings(new Setting[]{Setting.UUID, Setting.NAME, Setting.NICKNAME}).getSync();
 			for (SettingValue v : values)
 				switch (v.getSetting()) {
 				case NAME:
@@ -122,10 +118,13 @@ public class LoadedPlayer {
 					break;
 				case UUID:
 					uuid = UUID.fromString(v.getValue());
+					break;
 				case NICKNAME:
 					nickname = v.getValue() == null ? name : v.getValue();
-					this.displayedGroup = nickname.split(":").length > 1 ? nickname.split(":")[1] : null;
-					this.nickname = nickname.split(":")[0];
+					String[] split = nickname.split(":");
+					this.displayedGroup = split.length > 1 ? split[1] : null;
+					this.nickname = split[0];
+					break;
 				default:
 					break;
 				}
