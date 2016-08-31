@@ -410,9 +410,11 @@ public class ClientWrapper {
 				if(packet instanceof PacketGildPermissionResponse){
 					System.out.println(((PacketGildPermissionResponse) packet).getType()+" - "+((PacketGildPermissionResponse) packet).getGroup()+" - "+((PacketGildPermissionResponse) packet).getGilde()+" - "+((PacketGildPermissionResponse) packet).getResponse());
 					if(((PacketGildPermissionResponse)packet).getGilde().equals(group.getHandle().getHandle().getHandle().getUuid()))
-						if(((PacketGildPermissionResponse)packet).getType() == group.getHandle().getHandle().getType())
+						if(((PacketGildPermissionResponse)packet).getType() == group.getHandle().getHandle().getType()){
+							System.out.println(((PacketGildPermissionResponse) packet).getGroup()+"/"+group.getName());
 							if(((PacketGildPermissionResponse)packet).getGroup().equalsIgnoreCase(group.getName()))
 								done(((PacketGildPermissionResponse)packet).getResponse());
+						}
 				}
 			}
 		};

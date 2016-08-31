@@ -60,7 +60,8 @@ public class Gilde {
 				selections.put(t, new GildSection(this, t, true));
 			for(GildeType t : GildeType.values())
 				if(t != GildeType.ALL)
-					selections.putIfAbsent(t, new GildSection(this, t, false));
+					if(!selections.containsKey(t))
+						selections.put(t, new GildSection(this, t, false));
 			PacketGildMemberResponse member = connection.getGildeMembers(uuid).getSync();
 			for(MemberInformation i : member.getMember()){
 				System.out.println(i.getPlayerId()+" - "+Arrays.asList(i.getGroups())+" - "+Arrays.asList(i.getMember()));
