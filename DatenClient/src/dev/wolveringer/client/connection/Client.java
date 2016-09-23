@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.ProgressFuture;
@@ -184,8 +185,9 @@ public class Client {
 	}
 
 	public ProgressFuture<Error[]> writePacket(Packet packet) {
-		StatusResponseFuture f = new StatusResponseFuture(this, packet.getPacketUUID());
-		writer.addPacket(packet);
+		Validate.isTrue(getHandlerBoss().listenerCount() <= 1500,"Waiting for too mutch packets.");
+			StatusResponseFuture f = new StatusResponseFuture(this, packet.getPacketUUID());
+			writer.addPacket(packet);
 		return f;
 	}
 	

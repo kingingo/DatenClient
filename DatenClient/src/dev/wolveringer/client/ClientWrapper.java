@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import dev.wolveringer.arrays.CachedArrayList;
 import dev.wolveringer.booster.BoosterType;
 import dev.wolveringer.booster.NetworkBooster;
@@ -31,13 +33,18 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketBoosterStatusRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage;
 import dev.wolveringer.dataserver.protocoll.packets.PacketChatMessage.TargetType;
 import dev.wolveringer.dataserver.protocoll.packets.PacketForward;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildActionResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataResponse;
-import dev.wolveringer.dataserver.protocoll.packets.PacketGildCreate;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildInformationResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyHistoryAction;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyHistoryResponse;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionRequest;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildPermissionResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildSarch;
@@ -68,6 +75,7 @@ import dev.wolveringer.gilde.GildPermissionGroup;
 import dev.wolveringer.gilde.GildSection;
 import dev.wolveringer.gilde.GildSectionPermission;
 import dev.wolveringer.gilde.GildeType;
+import dev.wolveringer.gilde.MoneyLogRecord;
 import dev.wolveringer.nbt.NBTTagCompound;
 import dev.wolveringer.report.ReportEntity;
 
@@ -475,9 +483,65 @@ public class ClientWrapper {
 			}
 		};
 	}
-	public ProgressFuture<UUID> createGilde(LoadedPlayer player,String name){
-		PacketGildCreate p;
-		handle.writePacket(p = new PacketGildCreate(player.getPlayerId(), name));
-		return new GildCreateReponseFuture(handle, p);
+	public ProgressFuture<PacketGildActionResponse> createGilde(LoadedPlayer player,String name){
+		PacketGildAction p;
+		handle.writePacket(p = new PacketGildAction(player.getPlayerId(), null, PacketGildAction.Action.CREATE, name));
+		return new PacketResponseFuture<PacketGildActionResponse>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildActionResponse){
+					if(((PacketGildActionResponse)packet).getPlayerId() == player.getPlayerId())
+						done((PacketGildActionResponse) packet);
+				}
+			}
+		};
+	}
+
+	public ProgressFuture<PacketGildActionResponse> deleteGilde(UUID uuid) {
+		PacketGildAction p;
+		handle.writePacket(p = new PacketGildAction(-1, uuid, PacketGildAction.Action.DELETE, null));
+		return new PacketResponseFuture<PacketGildActionResponse>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildActionResponse){
+					if(((PacketGildActionResponse)packet).getUuid().equals(uuid))
+						done((PacketGildActionResponse) packet);
+					else
+						System.out.println(packet+" - "+uuid);
+				}
+			}
+		};
+	}
+	
+	public ProgressFuture<Integer> getGildenMoney(UUID gilde,GildeType type){
+		Packet p;
+		int playerId = (int) (System.nanoTime()%Integer.MAX_VALUE);
+		handle.writePacket(p = new PacketGildMoneyAction(gilde, type, dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyAction.Action.GET, playerId, -1, null));
+		return new PacketResponseFuture<Integer>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildMoneyResponse){
+					if(ObjectUtils.equals(((PacketGildMoneyResponse) packet).getGilde(), gilde))
+						if(((PacketGildMoneyResponse) packet).getType() == type)
+							if(((PacketGildMoneyResponse) packet).getPlayerId() == playerId)
+								done(((PacketGildMoneyResponse) packet).getResponse());
+				}
+			}
+		};
+	}
+	
+	public ProgressFuture<MoneyLogRecord[]> getGildenMoneyHistory(UUID gilde,GildeType type){
+		Packet p;
+		handle.writePacket(p = new PacketGildMoneyHistoryAction(gilde, type, dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyHistoryAction.Action.GET, -1, -1, null));
+		return new PacketResponseFuture<MoneyLogRecord[]>(handle,p) {
+			@Override
+			public void handlePacket(Packet packet) {
+				if(packet instanceof PacketGildMoneyHistoryResponse){
+					if(ObjectUtils.equals(((PacketGildMoneyHistoryResponse) packet).getGilde(), gilde))
+						if(((PacketGildMoneyHistoryResponse) packet).getType() == type)
+							done(((PacketGildMoneyHistoryResponse) packet).getRecords());
+				}
+			}
+		};
 	}
 }

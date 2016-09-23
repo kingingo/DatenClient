@@ -1,5 +1,7 @@
 package dev.wolveringer.client.connection;
 
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,6 +20,7 @@ public class ReaderThread {
 	
 	private Client client;
 	private InputStream in;
+	private DataInput din;
 	private ThreadRunner reader;
 	private boolean active;
 	private Unsave unsave = new Unsave() {
@@ -39,6 +42,7 @@ public class ReaderThread {
 	public ReaderThread(Client client, InputStream in) {
 		this.client = client;
 		this.in = in;
+		this.din = new DataInputStream(in);
 		init();
 	}
 
@@ -77,8 +81,17 @@ public class ReaderThread {
 	
 	private synchronized void readPacket() throws IOException {
 		long start = System.currentTimeMillis();
-		int length = (in.read() << 24) & 0xff000000 | (in.read() << 16) & 0x00ff0000 | (in.read() << 8) & 0x0000ff00 | (in.read()) & 0x000000ff;
+		int length = din.readInt();
+		
+		riw:
 		if (length <= 0 || length > 650000) {
+			if(length < 0){
+				int controlLength = din.readInt();
+				if(Math.abs(length) == controlLength){
+					length = controlLength;
+					break riw;
+				}
+			}
 			System.out.println("Reader index wrong (Wrong length ("+length+"))");
 			client.closePipeline(true);
 			return;

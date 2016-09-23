@@ -60,6 +60,14 @@ public class GildPermissionGroup {
 		return Collections.unmodifiableList(permissions);
 	}
 	
+	public List<GildePermissions> getEnumPermissions() {
+		ArrayList<GildePermissions> out = new ArrayList<>();
+		for(String perm : getPermissions()){
+			out.add(GildePermissions.getPermission(perm));
+		}
+		return out;
+	}
+	
 	public void removePermission(String permission){
 		init();
 		if(permissions.remove(permission)){
@@ -80,7 +88,6 @@ public class GildPermissionGroup {
 	public ArrayList<LoadedPlayer> getPlayers(){
 		ArrayList<LoadedPlayer> players = new ArrayList<>();
 		for(Entry<Integer, String> player : handle.players.entrySet()){
-			System.out.println(player.getKey()+" | "+player.getValue());
 			if(player.getValue().equalsIgnoreCase(name))
 				players.add(handle.getHandle().getHandle().getConnection().getPlayerAndLoad(player.getKey()));
 		}

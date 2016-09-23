@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import dev.wolveringer.arrays.CachedArrayList;
 import dev.wolveringer.client.ClientWrapper;
 import dev.wolveringer.client.LoadedPlayer;
+import dev.wolveringer.client.ProgressFuture;
+import dev.wolveringer.dataserver.protocoll.packets.PacketGildActionResponse;
 import dev.wolveringer.events.EventType;
 import dev.wolveringer.gilde.GildeType;
 
@@ -20,9 +22,13 @@ public class GildManager {
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PERMISSION_UPDATE).setEventEnabled(true);
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PLAYER_UPDATE).setEventEnabled(true);
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PROPERTIES_UPDATE).setEventEnabled(true);
-		connection.getHandle().getEventManager().registerListener(listener);
+		connection.getHandle().getEventManager().registerListener(listener, false);
 	}
-
+	
+	public void clear(){
+		gilden.clear();
+	}
+	
 	private synchronized Gilde loadGilde(UUID gilde) {
 		if(gilde == null)
 			return null;
@@ -70,5 +76,12 @@ public class GildManager {
 					if (s.getType() == type && s.players.contains(new Integer(player.getPlayerId())))
 						return g;
 		return getGilde(connection.getGildePlayer(player, type).getSync());
+	}
+
+	public ProgressFuture<PacketGildActionResponse> deleteGilde(Gilde gilde,boolean DatenServersync) { //TODO update all players in the gilde (Tab etc.)
+		gilden.remove(gilde);
+		if(DatenServersync)
+			return connection.deleteGilde(gilde.getUuid());
+		return null;
 	}
 }

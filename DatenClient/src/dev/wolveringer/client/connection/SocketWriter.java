@@ -1,6 +1,8 @@
 package dev.wolveringer.client.connection;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -23,8 +25,7 @@ public class SocketWriter {
 	
 	private Client owner;
 	private OutputStream out;
-	private int write;
-	private long lastWrite = -1;
+	private DataOutput dos;
 	
 	private ArrayList<Packet> queuedPackets = new ArrayList<>();
 	private ThreadRunner writerThread;
@@ -59,6 +60,7 @@ public class SocketWriter {
 	public SocketWriter(Client owner, OutputStream os) {
 		this.owner = owner;
 		this.out = os;
+		this.dos = new DataOutputStream(out);
 		this.writerThread = ThreadFactory.getFactory().createThread(()->{
 			while (active) {
 				Packet packet = null;
@@ -109,26 +111,17 @@ public class SocketWriter {
 			return;
 		}
 
-		if(lastWrite+1000>System.currentTimeMillis()){
-			if(write > 100){
-				System.err.println("Writing more than 100 packets/sec! (Curruntly: "+write+")");
-			}
-			lastWrite = System.currentTimeMillis();
-			write = 0;
-		}
-		
-		write++;
 		DataBuffer dbuffer = new DataBuffer();
 		dbuffer.writeInt(id);
 		dbuffer.writeUUID(packet.getPacketUUID());
 		packet.write(dbuffer);
 		dbuffer.resetReaderIndex();
 
-		ByteArrayOutputStream os = new ByteArrayOutputStream(4 + dbuffer.writerIndex()); // [INT(Length)|4][DATA|~]
-		os.write(new byte[] { (byte) (dbuffer.writerIndex() >>> 24), (byte) (dbuffer.writerIndex() >>> 16), (byte) (dbuffer.writerIndex() >>> 8), (byte) dbuffer.writerIndex() });
-		os.write(dbuffer.array(),0,dbuffer.writerIndex());
-		out.write(os.toByteArray());
+		dos.writeInt(-dbuffer.writerIndex());
+		dos.writeInt(dbuffer.writerIndex());
+		dos.write(dbuffer.array(),0,dbuffer.writerIndex());
 		out.flush();
+		
 		long end = System.currentTimeMillis();
 		Debugger.debug("Write packet "+packet.getClass().getName()+" in "+(end-start)+" ms");
 	}

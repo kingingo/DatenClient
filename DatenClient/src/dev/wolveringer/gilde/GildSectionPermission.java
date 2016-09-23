@@ -91,6 +91,8 @@ public class GildSectionPermission {
 	
 	public boolean hasPermission(LoadedPlayer player,GildePermissions perm){
 		GildPermissionGroup group = getGroup(player);
+		if(group.getName().equalsIgnoreCase("owner"))
+			return true;
 		return group != null && group.getPermissions().contains(perm.getPermission());
 	}
 }

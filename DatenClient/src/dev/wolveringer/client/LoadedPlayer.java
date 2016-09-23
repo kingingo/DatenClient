@@ -1,10 +1,7 @@
 package dev.wolveringer.client;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
-
-import javax.management.RuntimeErrorException;
 
 import org.apache.commons.lang3.Validate;
 
@@ -255,6 +252,7 @@ public class LoadedPlayer {
 	}
 
 	private void updateNickname(){
+		enshureValidReferences();
 		PacketInChangePlayerSettings packet = new PacketInChangePlayerSettings(playerId, Setting.NICKNAME, name+(displayedGroup != null ? ":"+displayedGroup : ""));
 		handle.writePacket(packet).getSync();
 		SettingValue[] values = getSettings(Setting.NICKNAME).getSync();
@@ -270,6 +268,7 @@ public class LoadedPlayer {
 	}
 	
 	public void setNicknameSync(String name) {
+		enshureValidReferences();
 		if (!loaded)
 			throw new RuntimeException("Player not loaded. Invoke load() at first");
 		this.name = name;
@@ -327,6 +326,7 @@ public class LoadedPlayer {
 	}
 
 	public BanStatsResponseFuture getBanStats(String ip, int deep) {
+		enshureValidReferences();
 		PacketInBanStatsRequest p = new PacketInBanStatsRequest(getUUID(), ip, name, deep);
 		BanStatsResponseFuture f = new BanStatsResponseFuture(handle.handle, p);
 		handle.handle.writePacket(p);
@@ -334,14 +334,17 @@ public class LoadedPlayer {
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> banPlayer(String curruntIp, String banner, String bannerIp, UUID bannerUUID, int level, long end, String reson) {
+		enshureValidReferences();
 		return handle.writePacket(new PacketInBanPlayer(name, curruntIp, getUUID() + "", banner, bannerIp, bannerUUID + "", end, level, reson));
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> kickPlayer(String reson) {
+		enshureValidReferences();
 		return handle.kickPlayer(playerId, reson);
 	}
 
 	public ProgressFuture<Skin> getOwnSkin() {
+		enshureValidReferences();
 		UUID uuid = UUID.randomUUID();
 		PacketSkinRequest r = new PacketSkinRequest(uuid, new PacketSkinRequest.SkinRequest[] { new PacketSkinRequest.SkinRequest(Type.FROM_PLAYER, null, null, playerId) });
 		handle.writePacket(r);
@@ -360,6 +363,7 @@ public class LoadedPlayer {
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> setOwnSkin(Skin skin) {
+		enshureValidReferences();
 		if (skin == null)
 			return handle.writePacket(new PacketSkinSet(playerId));
 		else
@@ -367,23 +371,34 @@ public class LoadedPlayer {
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> activeNetworkBooster(BoosterType type, int time) {
+		enshureValidReferences();
 		return handle.writePacket(new PacketBoosterActive(playerId, time, type));
 	}
 
 	public ProgressFuture<PacketOutPacketStatus.Error[]> addBoosterTime(int millis) {
+		enshureValidReferences();
 		return setStats(new EditStats(GameType.BOOSTER, Action.ADD, StatsKey.BOOSTER_TIME, millis));
 	}
 
 	public void loadPlayer() {
+		enshureValidReferences();
 		load();
 	}
 
 	public boolean isOnlineSync() {
+		enshureValidReferences();
 		return getServer().getSync() != null;
 	}
 
 	public void setIp(String ip) {
 		handle.writePacket(new PacketInChangePlayerSettings(playerId, Setting.CURRUNT_IP, ip));
 	}
-
+	
+	public boolean validReferences(){
+		return handle != null && handle.getHandle() != null && handle.getHandle().isConnected();
+	}
+	public void enshureValidReferences(){
+		if(!validReferences())
+			throw new RuntimeException("References are not valid! (Maybe not connected?)");
+	}
 }

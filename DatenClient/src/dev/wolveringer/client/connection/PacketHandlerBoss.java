@@ -186,4 +186,8 @@ public class PacketHandlerBoss {
 			return;
 	}
 
+	public int listenerCount() {
+		return listener.size();
+	}
+
 }

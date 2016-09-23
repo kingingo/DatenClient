@@ -2,6 +2,7 @@ package dev.wolveringer.gilde;
 
 import java.util.ArrayList;
 
+import dev.wolveringer.client.debug.Debugger;
 import dev.wolveringer.event.EventListener;
 import dev.wolveringer.events.Event;
 import dev.wolveringer.events.gilde.GildePermissionEvent;
@@ -25,17 +26,24 @@ public class GildeUpdateListener implements EventListener {
 			if (((GildePropertiesUpdate) e).getGildenType() == GildeType.ALL) {
 				if (((GildePropertiesUpdate) e).getProperty() == Property.NAME || ((GildePropertiesUpdate) e).getProperty() == Property.SHORT_NAME)
 					g.reloadNameAndShortname();
+				if (((GildePropertiesUpdate) e).getProperty() == Property.DELETE){
+					manager.deleteGilde(g, false);
+				}
 			}
 			if (((GildePropertiesUpdate) e).getProperty() == Property.COSTUM_DATA) {
 				if (g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive())
 					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).reloadDataSync();
 			}
 			if (((GildePropertiesUpdate) e).getProperty() == Property.ACTIVE_GILD_SECTION) {
-				if (!g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive())
+				boolean old = g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive();
+				Debugger.debug("Updating section status for gilde "+g.getUuid()+"["+((GildePropertiesUpdate) e).getGildenType()+"] from "+old+" to "+true);
+				if (!old)
 					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).active = true;
 			}
 			if (((GildePropertiesUpdate) e).getProperty() == Property.DEACTIVE_GILD_SECTION) {
-				if (g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive())
+				boolean old = g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive();
+				Debugger.debug("Updating section status for gilde "+g.getUuid()+"["+((GildePropertiesUpdate) e).getGildenType()+"] from "+old+" to "+false);
+				if (old)
 					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).active = false;
 			}
 		} else if (e instanceof GildePermissionEvent) {

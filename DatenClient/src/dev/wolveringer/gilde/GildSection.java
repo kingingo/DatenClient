@@ -22,6 +22,8 @@ public class GildSection {
 	protected boolean active;
 	private GildSectionPermission permissions = new GildSectionPermission(this);
 	private NBTTagCompound costumData;
+	@Getter
+	private GildSectionMoney money = new GildSectionMoney(this);
 	
 	protected ArrayList<Integer> players = new ArrayList<>();
 	
@@ -29,6 +31,7 @@ public class GildSection {
 		this.handle = handle;
 		this.type = type;
 		this.active = active;
+		this.money.init();
 	}
 
 	public void reloadDataSync(){

@@ -52,7 +52,6 @@ public class SpecificEventManager {
 	}
 	
 	private boolean enabled;
-	
 	private HashMap<EventConditions, ToggleableEventCondition> conditions = new HashMap<>();
 	@Getter
 	private EventType type;

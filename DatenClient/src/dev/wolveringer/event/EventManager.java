@@ -9,16 +9,56 @@ import dev.wolveringer.client.Callback;
 import dev.wolveringer.client.connection.Client;
 import dev.wolveringer.dataserver.protocoll.packets.Packet;
 import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus;
+import dev.wolveringer.events.Event;
 import dev.wolveringer.events.EventConditions;
 import dev.wolveringer.events.EventType;
+import dev.wolveringer.thread.ThreadFactory;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 public class EventManager {
+	@AllArgsConstructor
+	@Getter
+	private static class EventListenerHolder {
+		private EventListener listener;
+		private boolean sync;
+		
+		public void toggleEvent(Event e){
+			if(sync)
+				listener.fireEvent(e);
+			else
+				ThreadFactory.getFactory().createThread(()->{
+					listener.fireEvent(e);
+				}).start();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass()){
+				if(obj instanceof EventListener)
+				return obj.equals(listener);
+			}
+			EventListenerHolder other = (EventListenerHolder) obj;
+			if (listener == null) {
+				if (other.listener != null)
+					return false;
+			} else if (!listener.equals(other.listener))
+				return false;
+			if (sync != other.sync)
+				return false;
+			return true;
+		}
+	}
+	
 	private Client handle;
 	
 	private HashMap<EventType, SpecificEventManager> managers = new HashMap<>();
-	private ArrayList<EventListener> listeners  = new ArrayList<>();
+	private ArrayList<EventListenerHolder> listeners  = new ArrayList<>();
 	
 	@Getter
 	@Setter
@@ -31,14 +71,20 @@ public class EventManager {
 	}
 	
 	public void registerListener(EventListener listener){
-		listeners.add(listener);
+		registerListener(listener, true);
+	}
+	public void registerListener(EventListener listener,boolean sync){
+		listeners.add(new EventListenerHolder(listener, sync));
 	}
 	public void deregisterListener(EventListener listener){
 		listeners.remove(listener);
 	}
 	
 	public List<EventListener> getListener(){
-		return Collections.unmodifiableList(new ArrayList<>(listeners));
+		ArrayList<EventListener> out = new ArrayList<>();
+		for(EventListenerHolder h : listeners)
+			out.add(h.getListener());
+		return Collections.unmodifiableList(out);
 	}
 	
 	public SpecificEventManager getEventManager(EventType type){
