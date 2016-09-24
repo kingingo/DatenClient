@@ -22,6 +22,7 @@ public class GildManager {
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PERMISSION_UPDATE).setEventEnabled(true);
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PLAYER_UPDATE).setEventEnabled(true);
 		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_PROPERTIES_UPDATE).setEventEnabled(true);
+		connection.getHandle().getEventManager().getEventManager(EventType.GILDE_MONEY_UPDATE).setEventEnabled(true);
 		connection.getHandle().getEventManager().registerListener(listener, false);
 	}
 	

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import dev.wolveringer.client.debug.Debugger;
 import dev.wolveringer.event.EventListener;
 import dev.wolveringer.events.Event;
+import dev.wolveringer.events.gilde.GildeMoneyChangeEvent;
 import dev.wolveringer.events.gilde.GildePermissionEvent;
 import dev.wolveringer.events.gilde.GildePlayerEvent;
 import dev.wolveringer.events.gilde.GildePermissionEvent.Action;
@@ -37,14 +38,40 @@ public class GildeUpdateListener implements EventListener {
 			if (((GildePropertiesUpdate) e).getProperty() == Property.ACTIVE_GILD_SECTION) {
 				boolean old = g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive();
 				Debugger.debug("Updating section status for gilde "+g.getUuid()+"["+((GildePropertiesUpdate) e).getGildenType()+"] from "+old+" to "+true);
-				if (!old)
+				if (!old){
 					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).active = true;
+					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).getMoney().init();
+				}
 			}
 			if (((GildePropertiesUpdate) e).getProperty() == Property.DEACTIVE_GILD_SECTION) {
 				boolean old = g.getSelection(((GildePropertiesUpdate) e).getGildenType()).isActive();
 				Debugger.debug("Updating section status for gilde "+g.getUuid()+"["+((GildePropertiesUpdate) e).getGildenType()+"] from "+old+" to "+false);
 				if (old)
 					g.getSelection(((GildePropertiesUpdate) e).getGildenType()).active = false;
+			}
+		} 
+		else if(e instanceof GildeMoneyChangeEvent){
+			Gilde g = manager.getGilde(((GildeMoneyChangeEvent) e).getGilde());
+			if (g == null)
+				return;
+			if(!g.getSelection(((GildeMoneyChangeEvent) e).getGildenType()).isActive())
+				return;
+			GildSectionMoney money = g.getSelection(((GildeMoneyChangeEvent) e).getGildenType()).getMoney();
+			switch (((GildeMoneyChangeEvent) e).getAction()) {
+			case ADD:
+				money.currentMoney+=((GildeMoneyChangeEvent) e).getMoney();
+				break;
+			case REMOVE:
+				money.currentMoney-=((GildeMoneyChangeEvent) e).getMoney();
+				break;
+			case SET:
+				money.currentMoney=((GildeMoneyChangeEvent) e).getMoney();
+				break;
+			case HISTORY_ADD:
+				money.history.add(((GildeMoneyChangeEvent) e).getRecord());
+				break;
+			default:
+				break;
 			}
 		} else if (e instanceof GildePermissionEvent) {
 			GildePermissionEvent event = (GildePermissionEvent) e;

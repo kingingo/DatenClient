@@ -22,9 +22,9 @@ public class GildSectionMoney {
 	private final GildSection handle;
 	private WaitForObject initObject = new WaitForObject(2);
 	@Getter
-	private int currentMoney = -1;
+	protected int currentMoney = -1;
 	@Getter
-	private List<MoneyLogRecord> history;
+	protected List<MoneyLogRecord> history = new ArrayList<>();
 	
 	public void init(){
 		initMoney();
@@ -53,7 +53,7 @@ public class GildSectionMoney {
 					exception.printStackTrace();
 					return;
 				}
-				history = Arrays.asList(obj);
+				history = new ArrayList<>(Arrays.asList(obj));
 			}
 		});
 	}

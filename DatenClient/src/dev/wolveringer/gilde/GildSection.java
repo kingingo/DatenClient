@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import dev.wolveringer.client.LoadedPlayer;
+import dev.wolveringer.client.ProgressFuture;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildCostumDataAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemeberAction;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildUpdateSectionStatus;
+import dev.wolveringer.dataserver.protocoll.packets.PacketOutPacketStatus.Error;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemeberAction.Action;
 import dev.wolveringer.gilde.GildeType;
 import dev.wolveringer.nbt.NBTTagCompound;
@@ -31,7 +33,8 @@ public class GildSection {
 		this.handle = handle;
 		this.type = type;
 		this.active = active;
-		this.money.init();
+		if(active)
+			this.money.init();
 	}
 
 	public void reloadDataSync(){
@@ -67,11 +70,11 @@ public class GildSection {
 		handle.getConnection().writePacket(new PacketGildCostumDataAction(handle.getUuid(), type, costumData));
 	}
 	
-	public void setActive(boolean active) {
+	public ProgressFuture<Error[]> setActive(boolean active) {
 		if(this.active == active)
-			return;
+			return null;
 		this.active = active;
-		handle.getConnection().writePacket(new PacketGildUpdateSectionStatus(handle.getUuid(), type, active));
+		return handle.getConnection().writePacket(new PacketGildUpdateSectionStatus(handle.getUuid(), type, active));
 	}
 	
 	public LoadedPlayer getStatsPlayer(){

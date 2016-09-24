@@ -515,15 +515,15 @@ public class ClientWrapper {
 	
 	public ProgressFuture<Integer> getGildenMoney(UUID gilde,GildeType type){
 		Packet p;
-		int playerId = (int) (System.nanoTime()%Integer.MAX_VALUE);
-		handle.writePacket(p = new PacketGildMoneyAction(gilde, type, dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyAction.Action.GET, playerId, -1, null));
+		handle.writePacket(p = new PacketGildMoneyAction(gilde, type, dev.wolveringer.dataserver.protocoll.packets.PacketGildMoneyAction.Action.GET, -1, -1, null));
 		return new PacketResponseFuture<Integer>(handle,p) {
 			@Override
 			public void handlePacket(Packet packet) {
 				if(packet instanceof PacketGildMoneyResponse){
+					//System.out.println(((PacketGildMoneyResponse) packet).getGilde()+" - "+gilde+" / "+((PacketGildMoneyResponse) packet).getType()+" - "+type+" / "+((PacketGildMoneyResponse) packet).getPlayerId()+" - "+-1);
 					if(ObjectUtils.equals(((PacketGildMoneyResponse) packet).getGilde(), gilde))
 						if(((PacketGildMoneyResponse) packet).getType() == type)
-							if(((PacketGildMoneyResponse) packet).getPlayerId() == playerId)
+							if(((PacketGildMoneyResponse) packet).getPlayerId() == 0)
 								done(((PacketGildMoneyResponse) packet).getResponse());
 				}
 			}
