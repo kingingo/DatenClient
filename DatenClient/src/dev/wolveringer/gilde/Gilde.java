@@ -1,7 +1,6 @@
 package dev.wolveringer.gilde;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +12,7 @@ import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse;
 import dev.wolveringer.dataserver.protocoll.packets.PacketGildMemberResponse.MemberInformation;
 import dev.wolveringer.gilde.GildeType;
 import lombok.Getter;
+import static dev.wolveringer.gilde.GildeVariables.INVITE_GROUP;
 
 public class Gilde {
 	@Getter
@@ -27,7 +27,7 @@ public class Gilde {
 	@Getter
 	private int ownerId;
 	
-	private HashMap<GildeType, GildSection> selections = new HashMap();
+	private HashMap<GildeType, GildSection> selections = new HashMap<>();
 	private boolean exist;
 	private boolean loaded;
 	
@@ -64,10 +64,15 @@ public class Gilde {
 						selections.put(t, new GildSection(this, t, false));
 			PacketGildMemberResponse member = connection.getGildeMembers(uuid).getSync();
 			for(MemberInformation i : member.getMember()){
-				System.out.println(i.getPlayerId()+" - "+Arrays.asList(i.getGroups())+" - "+Arrays.asList(i.getMember()));
 				for(int j = 0;j<i.getMember().length;j++) {
-					selections.get(i.getMember()[j]).players.add(i.getPlayerId());
-					selections.get(i.getMember()[j]).getPermission().players.put(i.getPlayerId(), i.getGroups()[j]);
+					if(i.getGroups()[j].equalsIgnoreCase(INVITE_GROUP)){
+						selections.get(i.getMember()[j]).requestedPlayer.add(i.getPlayerId());
+					}
+					else
+					{
+						selections.get(i.getMember()[j]).players.add(i.getPlayerId());
+						selections.get(i.getMember()[j]).getPermission().players.put(i.getPlayerId(), i.getGroups()[j]);
+					}
 				}
 			}
 			exist = true;
@@ -82,6 +87,8 @@ public class Gilde {
 		}
 			
 	}
+	
+	
 	
 	public GildSection getSelection(GildeType type){
 		return selections.get(type);

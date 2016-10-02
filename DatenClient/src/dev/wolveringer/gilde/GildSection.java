@@ -28,6 +28,8 @@ public class GildSection {
 	private GildSectionMoney money = new GildSectionMoney(this);
 	
 	protected ArrayList<Integer> players = new ArrayList<>();
+	@Getter
+	protected ArrayList<Integer> requestedPlayer = new ArrayList<>();
 	
 	public GildSection(Gilde handle, GildeType type,boolean active) {
 		this.handle = handle;
@@ -47,6 +49,28 @@ public class GildSection {
 	
 	public List<Integer> getPlayers() {
 		return Collections.unmodifiableList(players);
+	}
+	
+	public void addRequest(LoadedPlayer player){
+		if(!requestedPlayer.contains(new Integer(player.getPlayerId()))){
+			requestedPlayer.add(player.getPlayerId());
+			handle.getConnection().writePacket(new PacketGildMemeberAction(handle.getUuid(), type, player.getPlayerId(), Action.INVITE, null));
+		}
+	}
+	
+	public void removeRequest(LoadedPlayer player){
+		if(requestedPlayer.contains(new Integer(player.getPlayerId()))){
+			requestedPlayer.remove(new Integer(player.getPlayerId()));
+			handle.getConnection().writePacket(new PacketGildMemeberAction(handle.getUuid(), type, player.getPlayerId(), Action.REMOVE_INVITE, null));
+		}
+	}
+	
+	public ProgressFuture<Error[]> acceptRequest(LoadedPlayer player){
+		if(requestedPlayer.contains(new Integer(player.getPlayerId()))){
+			requestedPlayer.remove(new Integer(player.getPlayerId()));
+			return handle.getConnection().writePacket(new PacketGildMemeberAction(handle.getUuid(), type, player.getPlayerId(), Action.ACCEPT_REQUEST, null));
+		}
+		return null;
 	}
 	
 	public void kickPlayer(LoadedPlayer player){

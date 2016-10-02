@@ -93,4 +93,12 @@ public class GildPermissionGroup {
 		}
 		return players;
 	}
+	
+	public void delete(){
+		handle.groups.remove(this);
+		handle.getHandle().getHandle().getConnection().writePacket(new PacketGildPermissionEdit(handle.getHandle().getHandle().getUuid(), handle.getHandle().getType(), Action.DELETE_GROUP, name, null));
+		for(Entry<Integer, String> entries : handle.players.entrySet())
+			if(entries.getValue().equalsIgnoreCase(name))
+				handle.setGroup(entries.getKey(), handle.getDefaultGroup());
+	}
 }

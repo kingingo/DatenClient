@@ -13,6 +13,7 @@ import dev.wolveringer.events.gilde.GildePropertiesUpdate;
 import dev.wolveringer.events.gilde.GildePropertiesUpdate.Property;
 import dev.wolveringer.gilde.GildeType;
 import lombok.RequiredArgsConstructor;
+import static dev.wolveringer.gilde.GildeVariables.INVITE_GROUP;
 
 @RequiredArgsConstructor
 public class GildeUpdateListener implements EventListener {
@@ -103,8 +104,20 @@ public class GildeUpdateListener implements EventListener {
 				return;
 			if(!g.getSelection(event.getGildenType()).isActive())
 				return;
-			
-			if(event.getAction() == dev.wolveringer.events.gilde.GildePlayerEvent.Action.ADD){
+
+			if(event.getRank() != null && event.getRank().equalsIgnoreCase(INVITE_GROUP)){
+				if(((GildePlayerEvent) e).getAction() == GildePlayerEvent.Action.ADD){
+					if(!g.getSelection(event.getGildenType()).requestedPlayer.contains(event.getPlayer())){
+						g.getSelection(event.getGildenType()).requestedPlayer.add(event.getPlayer());
+					}
+				} else if(((GildePlayerEvent) e).getAction() == GildePlayerEvent.Action.REMOVE){
+					if(g.getSelection(event.getGildenType()).requestedPlayer.contains(event.getPlayer())){
+						g.getSelection(event.getGildenType()).requestedPlayer.remove(event.getPlayer());
+					}
+				}
+				return;
+			}
+			if(event.getAction() == GildePlayerEvent.Action.ADD){
 				ArrayList<Integer> players = g.getSelection(event.getGildenType()).players;
 				if(!players.contains(new Integer(event.getPlayer()))){
 					players.add(new Integer(event.getPlayer()));
